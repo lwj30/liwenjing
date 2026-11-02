@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--
+  作者：李汶静
+  创建时间：2026-11-02 16:25
+  使用模型：Kimi-K3
+  功能：仓库入口跳转页，访问根目录时自动跳转到汽车导购 Tab 页面 tab-car.html
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=tab-car.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正在跳转到汽车导购</title>
+  <style>
+    .lwj_redirect_tip {
+      font-family: "Microsoft YaHei", sans-serif;
+      text-align: center;
+      margin-top: 20vh;
+      color: #333;
+    }
+    .lwj_redirect_tip a {
+      color: #b7282e;
+    }
+  </style>
+</head>
+<body>
+  <p class="lwj_redirect_tip">正在跳转到汽车导购页面，若未自动跳转请 <a href="tab-car.html">点击这里</a></p>
+  <script>
+    /**
+     * 页面跳转兜底
+     * @desc meta refresh 失效时，用 JS 立即跳转到 tab-car.html
+     * @author 李汶静
+     * @created 2026-11-02
+     */
+    window.location.replace('tab-car.html');
+  </script>
+</body>
+</html>
