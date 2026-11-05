@@ -1,38 +1,82 @@
 <!DOCTYPE html>
-<!--
-  作者：李汶静
-  创建时间：2026-11-02 16:25
-  使用模型：Kimi-K3
-  功能：仓库入口跳转页，访问根目录时自动跳转到汽车导购 Tab 页面 tab-car.html
--->
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=tab-car.html">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>正在跳转到汽车导购</title>
+  <title>李汶静 · 课堂作品集</title>
   <style>
-    .lwj_redirect_tip {
-      font-family: "Microsoft YaHei", sans-serif;
-      text-align: center;
-      margin-top: 20vh;
-      color: #333;
-    }
-    .lwj_redirect_tip a {
-      color: #b7282e;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:linear-gradient(135deg,#f5f7ff,#eaf0ff);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 20px}
+    .wrap{max-width:960px;width:100%}
+
+    header{text-align:center;margin-bottom:50px}
+    header h1{font-size:34px;color:#0f2b5b;letter-spacing:2px}
+    header p{margin-top:12px;color:#5b6b88;font-size:15px}
+    header .badge{display:inline-block;margin-top:16px;padding:5px 16px;border-radius:999px;background:#e8f0ff;color:#1d5bbf;font-size:13px;letter-spacing:2px;border:1px solid #c7d8f8}
+
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:26px}
+    .card{background:#fff;border-radius:20px;padding:32px;box-shadow:0 8px 24px rgba(15,43,91,.08);border:1px solid #e8ecf5;text-decoration:none;color:inherit;transition:transform .25s,box-shadow .25s;display:block}
+    .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(15,43,91,.18)}
+
+    .card .no{display:inline-block;width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#0f2b5b,#1d5bbf);color:#fff;font-size:20px;font-weight:bold;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+    .card h2{font-size:22px;color:#111827;margin-bottom:8px}
+    .card .sub{color:#9ca3af;font-size:13px;margin-bottom:14px}
+    .card p{color:#4b5563;font-size:14.5px;line-height:1.8;margin-bottom:18px}
+    .card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+    .card .tags i{font-style:normal;font-size:12px;padding:3px 10px;border-radius:999px;background:#eef2ff;color:#1d4ed8}
+    .card .go{display:inline-flex;align-items:center;gap:6px;color:#1d5bbf;font-weight:bold;font-size:14px}
+    .card .go::after{content:"→";transition:transform .2s}
+    .card:hover .go::after{transform:translateX(4px)}
+
+    .card.car .no{background:linear-gradient(135deg,#b7282e,#e8890c)}
+    .card.car .tags i{background:#fff3e8;color:#b45309}
+    .card.car .go{color:#b7282e}
+
+    footer{text-align:center;margin-top:60px;color:#9ca3af;font-size:13px;line-height:2}
   </style>
 </head>
 <body>
-  <p class="lwj_redirect_tip">正在跳转到汽车导购页面，若未自动跳转请 <a href="tab-car.html">点击这里</a></p>
-  <script>
-    /**
-     * 页面跳转兜底
-     * @desc meta refresh 失效时，用 JS 立即跳转到 tab-car.html
-     * @author 李汶静
-     * @created 2026-11-02
-     */
-    window.location.replace('tab-car.html');
-  </script>
+  <div class="wrap">
+    <header>
+      <h1>📚 课堂作品集</h1>
+      <p>高级网页设计 · 2026-2027-1 · 李汶静</p>
+      <span class="badge">Swiper 轮播 · Tab 选项卡</span>
+    </header>
+
+    <div class="cards">
+      <a class="card" href="swiper-task.html">
+        <span class="no">4</span>
+        <h2>Swiper 大国重器光影展</h2>
+        <div class="sub">课堂操作任务 · 学生版</div>
+        <p>四个渐进式任务救活 Swiper 轮播：最小拖动 → 圆点+箭头 → 自动翻页 → 六种效果（slide / fade / cube / coverflow / flip / cards）实时切换。</p>
+        <div class="tags">
+          <i>Swiper 11</i>
+          <i>autoplay</i>
+          <i>pagination</i>
+          <i>navigation</i>
+          <i>effect</i>
+        </div>
+        <div class="go">打开作业</div>
+      </a>
+
+      <a class="card car" href="tab-car.html">
+        <span class="no">3</span>
+        <h2>汽车导购 Tab 选项卡</h2>
+        <div class="sub">课堂操作任务 · 之前的作品</div>
+        <p>使用原生 JS 实现 Tab 切换交互，通过点击选项卡展示不同品牌汽车的导购内容，适合移动端展示。</p>
+        <div class="tags">
+          <i>原生 JS</i>
+          <i>Tab 切换</i>
+          <i>汽车导购</i>
+        </div>
+        <div class="go">打开作业</div>
+      </a>
+    </div>
+
+    <footer>
+      访问根路径会看到这个入口页，点击卡片进入对应作业<br>
+      直接访问 /swiper-task.html 或 /tab-car.html 也可以直达
+    </footer>
+  </div>
 </body>
 </html>
