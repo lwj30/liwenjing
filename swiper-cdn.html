@@ -1,0 +1,247 @@
+<!--
+  作者：李汶静
+  创建时间：2026-11-09 13:20
+  使用模型：DeepSeek-V4.1-Flash
+  功能：Swiper 11 本地组件库说明页，介绍 cdn/swiper 目录下的离线文件，并提供一个可运行的最小示例。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swiper 11 本地组件库</title>
+  <link rel="stylesheet" href="cdn/swiper/swiper-bundle.min.css">
+  <style>
+    /* ====== 基础重置 ====== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background: radial-gradient(900px 500px at 50% -8%, #ffffff, #eef3fb 60%, #e9eef9);
+      min-height: 100vh;
+      padding: 56px 24px 72px;
+      color: #1a2340;
+    }
+
+    .lwj_wrap { max-width: 880px; margin: 0 auto; }
+
+    /* ====== 页头 ====== */
+    .lwj_head { text-align: center; margin-bottom: 40px; }
+    .lwj_head h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #16244a;
+    }
+    .lwj_head p {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #64748f;
+      letter-spacing: 0.04em;
+    }
+
+    /* ====== 通用面板 ====== */
+    .lwj_panel {
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid rgba(214, 226, 245, 0.9);
+      box-shadow: 0 14px 40px rgba(31, 56, 105, 0.1);
+      padding: 28px 30px;
+      margin-bottom: 26px;
+    }
+    .lwj_panel h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #16244a;
+      margin-bottom: 16px;
+    }
+    .lwj_panel p {
+      font-size: 14px;
+      line-height: 1.9;
+      color: #45516b;
+    }
+
+    /* ====== 文件清单表 ====== */
+    .lwj_file-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 13.5px;
+    }
+    .lwj_file-table th,
+    .lwj_file-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e8effa;
+      color: #45516b;
+    }
+    .lwj_file-table th {
+      color: #8a97b0;
+      font-weight: 600;
+      font-size: 12.5px;
+    }
+    .lwj_file-table code {
+      font-family: Consolas, Monaco, monospace;
+      color: #2f6fd0;
+      font-size: 13px;
+    }
+
+    /* ====== 代码片段 ====== */
+    .lwj_code {
+      margin-top: 16px;
+      background: #10161f;
+      border-radius: 12px;
+      padding: 16px 18px;
+      overflow-x: auto;
+    }
+    .lwj_code code {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #d7e2f0;
+      white-space: pre;
+    }
+    .lwj_code .lwj_code-key { color: #d9b45b; }
+
+    /* ====== 示例轮播 ====== */
+    .lwj_demo-swiper {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      margin-top: 6px;
+    }
+    .lwj_demo-swiper .swiper-slide { position: relative; }
+    .lwj_demo-swiper img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+    .lwj_demo-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 44px 20px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #fff;
+      background: linear-gradient(to top, rgba(4, 7, 11, 0.85), rgba(4, 7, 11, 0));
+    }
+    .lwj_demo-swiper .swiper-pagination-bullet { background: #fff; opacity: 0.4; }
+    .lwj_demo-swiper .swiper-pagination-bullet-active { background: #d9b45b; opacity: 1; }
+
+    /* ====== 页脚 ====== */
+    .lwj_foot { text-align: center; margin-top: 40px; }
+    .lwj_back-home {
+      display: inline-block;
+      color: #64748f;
+      text-decoration: none;
+      font-size: 13px;
+      border: 1px solid #d6e2f5;
+      border-radius: 999px;
+      padding: 9px 26px;
+      background: #fff;
+      transition: all 0.2s;
+    }
+    .lwj_back-home:hover { color: #2f6fd0; border-color: #2f6fd0; }
+  </style>
+</head>
+<body>
+
+  <div class="lwj_wrap">
+
+    <!-- ====== 页头 ====== -->
+    <header class="lwj_head">
+      <h1>Swiper 11 本地组件库</h1>
+      <p>离线依赖 · cdn/swiper · 断网也能跑的轮播能力</p>
+    </header>
+
+    <!-- ====== 文件说明 ====== -->
+    <section class="lwj_panel">
+      <h2>目录与文件</h2>
+      <p>为避免依赖远程 CDN，Swiper 的样式与脚本已下载到项目的 <code>cdn/swiper/</code> 目录，
+        页面只要用相对路径引用即可，双击本地 HTML 也能正常运行。</p>
+      <table class="lwj_file-table">
+        <thead>
+          <tr>
+            <th>文件</th>
+            <th>大小</th>
+            <th>作用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>swiper-bundle.min.css</code></td>
+            <td>18 KB</td>
+            <td>轮播布局、分页器、箭头等基础样式</td>
+          </tr>
+          <tr>
+            <td><code>swiper-bundle.min.js</code></td>
+            <td>151 KB</td>
+            <td>UMD 完整包，含 autoplay、pagination、navigation、七种 effect 与 keyboard 模块</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="lwj_code">
+        <code>&lt;link rel="stylesheet" href="cdn/swiper/swiper-bundle.min.css"&gt;
+&lt;script src="cdn/swiper/swiper-bundle.min.js"&gt;&lt;/script&gt;
+
+<span class="lwj_code-key">new</span> Swiper('#wySwLocal', {
+  loop: true,
+  pagination: { el: '#wySwLocal .swiper-pagination', clickable: true }
+});</code>
+      </div>
+    </section>
+
+    <!-- ====== 最小示例 ====== -->
+    <section class="lwj_panel">
+      <h2>最小可运行示例</h2>
+      <p>下面这个轮播只用上面两个本地文件，没有任何远程请求：支持循环、圆点分页与点击跳转。</p>
+      <div class="swiper lwj_demo-swiper" id="wySwLocal">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide">
+            <img src="images/exhibit-1-fujian.jpg" alt="福建舰">
+            <div class="lwj_demo-caption">福建舰 · 首艘国产电磁弹射航母</div>
+          </div>
+          <div class="swiper-slide">
+            <img src="images/exhibit-5-beidou.jpg" alt="北斗三号">
+            <div class="lwj_demo-caption">北斗三号 · 全球卫星导航系统</div>
+          </div>
+          <div class="swiper-slide">
+            <img src="images/exhibit-6-adora.jpg" alt="爱达 · 魔都号">
+            <div class="lwj_demo-caption">爱达 · 魔都号 · 首艘国产大型邮轮</div>
+          </div>
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </section>
+
+    <!-- ====== 返回首页 ====== -->
+    <footer class="lwj_foot">
+      <a href="index.html" class="lwj_back-home">← 返回首页</a>
+    </footer>
+
+  </div>
+
+  <script src="cdn/swiper/swiper-bundle.min.js"></script>
+  <script>
+    /**
+     * 初始化组件库示例轮播
+     * @desc 用本地 cdn/swiper 的 UMD 包创建最小轮播，验证离线依赖可用
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjInitLocalDemo() {
+      new Swiper('#wySwLocal', {
+        loop: true,
+        pagination: { el: '#wySwLocal .swiper-pagination', clickable: true }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', lwjInitLocalDemo);
+  </script>
+</body>
+</html>

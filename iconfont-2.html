@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lucide · A Technical Reference</title>
+<link rel="stylesheet" href="cdn/fonts/fonts.css">
+<style>
+/* ============================================================
+   Design Tokens — Blueprint Draft
+   ============================================================ */
+:root {
+  --bp-paper:  #0F2547;               /* 蓝图纸 */
+  --bp-ink:    #FFFFFF;               /* 白墨 */
+  --bp-grid:   rgba(255,255,255,.07); /* 网格 */
+  --bp-grid-major: rgba(255,255,255,.14);
+  --bp-accent: #E8C468;               /* 琥珀标记 */
+  --bp-muted:  rgba(255,255,255,.5);
+  --bp-dim:    rgba(255,255,255,.28);
+  --bp-line:   rgba(255,255,255,.22);
+  --bp-display: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
+  --bp-mono:    'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bp-paper);
+  color: var(--bp-ink);
+  font-family: var(--bp-display);
+  font-size: 15px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: .005em;
+}
+
+/* 网格底：全出血 */
+body {
+  background-image:
+    linear-gradient(var(--bp-grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid-major) 1px, transparent 1px),
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
+
+.lwj_page {
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 72px 56px 56px;
+}
+
+/* 纸张四角斜切标记（工程图角标） */
+.lwj_page::before,
+.lwj_page::after {
+  content: "";
+  position: absolute;
+  width: 24px; height: 24px;
+  border-color: var(--bp-accent);
+  border-style: solid;
+  opacity: .7;
+}
+.lwj_page::before {
+  top: 24px; left: 24px;
+  border-width: 0 0 1px 1px;
+}
+.lwj_page::after {
+  top: 24px; right: 24px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ------------------------------------------------------------
+   HERO · 标题区
+   ------------------------------------------------------------ */
+.lwj_hero {
+  margin-bottom: 64px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--bp-line);
+}
+.lwj_hero-kicker {
+  font-family: var(--bp-mono);
+  font-size: 11px;
+  letter-spacing: .24em;
+  color: var(--bp-accent);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+.lwj_hero-title {
+  font-family: var(--bp-display);
+  font-size: 72px;
+  font-weight: 500;
+  letter-spacing: -2px;
+  line-height: .95;
+  margin: 0 0 8px 0;
+}
+.lwj_hero-sub {
+  font-family: var(--bp-display);
+  font-size: 18px;
+  color: var(--bp-muted);
+  margin: 0 0 28px 0;
+  font-weight: 400;
+}
+.lwj_hero-meta {
+  font-family: var(--bp-mono);
+  font-size: 11px;
+  color: var(--bp-dim);
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  gap: 32px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--bp-line);
+}
+.lwj_hero-meta span strong {
+  color: var(--bp-accent);
+  font-weight: 500;
+}
+.lwj_hero-meta span::before {
+  content: "// ";
+  color: var(--bp-accent);
+  opacity: .6;
+}
+
+/* ------------------------------------------------------------
+   章节 ▸ 琥珀标记
+   ------------------------------------------------------------ */
+.lwj_section {
+  margin-bottom: 52px;
+}
+.lwj_section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.lwj_section-tick {
+  display: inline-block;
+  width: 0; height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid var(--bp-accent);
+}
+.lwj_section-label {
+  font-family: var(--bp-display);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--bp-ink);
+  letter-spacing: .02em;
+}
+.lwj_section-meta {
+  font-family: var(--bp-mono);
+  font-size: 11px;
+  color: var(--bp-dim);
+  margin-left: 12px;
+  letter-spacing: .04em;
+}
+
+/* ------------------------------------------------------------
+   图标网格：技术卡片
+   ------------------------------------------------------------ */
+.lwj_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 2px;
+}
+.lwj_cell {
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--bp-line);
+  padding: 22px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.lwj_cell:hover {
+  background: rgba(232, 196, 104, .06);
+  border-color: var(--bp-accent);
+}
+.lwj_cell svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.6;
+  color: var(--bp-ink);
+  transition: color .18s ease;
+}
+.lwj_cell:hover svg {
+  color: var(--bp-accent);
+}
+.lwj_cell-name {
+  font-family: var(--bp-mono);
+  font-size: 10px;
+  letter-spacing: .01em;
+  color: var(--bp-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color .18s ease;
+}
+.lwj_cell:hover .lwj_cell-name {
+  color: var(--bp-accent);
+}
+
+/* 网格十字准星（极淡） */
+.lwj_cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, transparent calc(50% - 10px), rgba(255,255,255,.05) calc(50% - 10px), rgba(255,255,255,.05) calc(50% + 10px), transparent calc(50% + 10px)),
+    linear-gradient(to bottom, transparent calc(50% - 10px), rgba(255,255,255,.05) calc(50% - 10px), rgba(255,255,255,.05) calc(50% + 10px), transparent calc(50% + 10px));
+  opacity: 0;
+  transition: opacity .18s;
+}
+.lwj_cell:hover::before { opacity: 1; }
+
+/* ------------------------------------------------------------
+   底部签名框 · 工程图风格
+   ------------------------------------------------------------ */
+.lwj_titleblock {
+  margin-top: 64px;
+  border-top: 1px solid var(--bp-line);
+  padding-top: 18px;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 12px 24px;
+  font-family: var(--bp-mono);
+  font-size: 11px;
+  color: var(--bp-dim);
+}
+.lwj_titleblock b {
+  color: var(--bp-accent);
+  font-weight: 500;
+}
+.lwj_titleblock .lwj_tb-border {
+  border-left: 1px solid var(--bp-line);
+  padding-left: 24px;
+  color: var(--bp-muted);
+}
+.lwj_titleblock a {
+  color: var(--bp-ink);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--bp-accent);
+  padding-bottom: 2px;
+  letter-spacing: .06em;
+  transition: color .15s;
+}
+.lwj_titleblock a:hover { color: var(--bp-accent); }
+
+/* ------------------------------------------------------------
+   Toast
+   ------------------------------------------------------------ */
+.lwj_toast {
+  position: fixed;
+  bottom: 32px; left: 50%;
+  transform: translate(-50%, 20px);
+  background: rgba(15,37,71,.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--bp-accent);
+  color: var(--bp-ink);
+  font-family: var(--bp-mono);
+  font-size: 12px;
+  padding: 14px 24px;
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+  z-index: 100;
+  pointer-events: none;
+}
+.lwj_toast[data-show="1"] {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .lwj_page { padding: 48px 24px 40px; }
+  .lwj_hero-title { font-size: 48px; letter-spacing: -1px; }
+  .lwj_hero-meta { grid-template-columns: repeat(2, max-content); gap: 16px; }
+  .lwj_titleblock { grid-template-columns: 1fr 1fr; }
+  .lwj_titleblock .lwj_tb-border { border-left: none; padding-left: 0; grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+
+<div class="lwj_page">
+
+  <!-- ========== HERO ========== -->
+  <header class="lwj_hero">
+    <div class="lwj_hero-kicker">open-source icon library · technical reference</div>
+    <h1 class="lwj_hero-title">lucide</h1>
+    <p class="lwj_hero-sub">a consistently-styled set of 1400+ stroke icons</p>
+    <div class="lwj_hero-meta">
+      <span>revision <strong>latest</strong></span>
+      <span>format <strong>SVG</strong></span>
+      <span>line weight <strong>1.5 → 2</strong></span>
+      <span>date <strong>2026.10.22</strong></span>
+    </div>
+  </header>
+
+  <!-- ========== SECTION · COMMON ========== -->
+  <section class="lwj_section">
+    <div class="lwj_section-head">
+      <span class="lwj_section-tick"></span>
+      <span class="lwj_section-label">common</span>
+      <span class="lwj_section-meta">16 glyphs</span>
+    </div>
+    <div class="lwj_grid">
+      <div class="lwj_cell"><i data-lucide="home"></i><span class="lwj_cell-name">home</span></div>
+      <div class="lwj_cell"><i data-lucide="user"></i><span class="lwj_cell-name">user</span></div>
+      <div class="lwj_cell"><i data-lucide="mail"></i><span class="lwj_cell-name">mail</span></div>
+      <div class="lwj_cell"><i data-lucide="phone"></i><span class="lwj_cell-name">phone</span></div>
+      <div class="lwj_cell"><i data-lucide="heart"></i><span class="lwj_cell-name">heart</span></div>
+      <div class="lwj_cell"><i data-lucide="camera"></i><span class="lwj_cell-name">camera</span></div>
+      <div class="lwj_cell"><i data-lucide="music"></i><span class="lwj_cell-name">music</span></div>
+      <div class="lwj_cell"><i data-lucide="cloud"></i><span class="lwj_cell-name">cloud</span></div>
+      <div class="lwj_cell"><i data-lucide="zap"></i><span class="lwj_cell-name">zap</span></div>
+      <div class="lwj_cell"><i data-lucide="rocket"></i><span class="lwj_cell-name">rocket</span></div>
+      <div class="lwj_cell"><i data-lucide="code"></i><span class="lwj_cell-name">code</span></div>
+      <div class="lwj_cell"><i data-lucide="gift"></i><span class="lwj_cell-name">gift</span></div>
+      <div class="lwj_cell"><i data-lucide="search"></i><span class="lwj_cell-name">search</span></div>
+      <div class="lwj_cell"><i data-lucide="bell"></i><span class="lwj_cell-name">bell</span></div>
+      <div class="lwj_cell"><i data-lucide="settings"></i><span class="lwj_cell-name">settings</span></div>
+      <div class="lwj_cell"><i data-lucide="map-pin"></i><span class="lwj_cell-name">map-pin</span></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION · NAV & ACTIONS ========== -->
+  <section class="lwj_section">
+    <div class="lwj_section-head">
+      <span class="lwj_section-tick"></span>
+      <span class="lwj_section-label">navigation &amp; actions</span>
+      <span class="lwj_section-meta">16 glyphs</span>
+    </div>
+    <div class="lwj_grid">
+      <div class="lwj_cell"><i data-lucide="arrow-left"></i><span class="lwj_cell-name">arrow-left</span></div>
+      <div class="lwj_cell"><i data-lucide="arrow-right"></i><span class="lwj_cell-name">arrow-right</span></div>
+      <div class="lwj_cell"><i data-lucide="arrow-up"></i><span class="lwj_cell-name">arrow-up</span></div>
+      <div class="lwj_cell"><i data-lucide="arrow-down"></i><span class="lwj_cell-name">arrow-down</span></div>
+      <div class="lwj_cell"><i data-lucide="chevron-left"></i><span class="lwj_cell-name">chevron-left</span></div>
+      <div class="lwj_cell"><i data-lucide="chevron-right"></i><span class="lwj_cell-name">chevron-right</span></div>
+      <div class="lwj_cell"><i data-lucide="menu"></i><span class="lwj_cell-name">menu</span></div>
+      <div class="lwj_cell"><i data-lucide="x"></i><span class="lwj_cell-name">x</span></div>
+      <div class="lwj_cell"><i data-lucide="plus"></i><span class="lwj_cell-name">plus</span></div>
+      <div class="lwj_cell"><i data-lucide="minus"></i><span class="lwj_cell-name">minus</span></div>
+      <div class="lwj_cell"><i data-lucide="edit"></i><span class="lwj_cell-name">edit</span></div>
+      <div class="lwj_cell"><i data-lucide="trash-2"></i><span class="lwj_cell-name">trash-2</span></div>
+      <div class="lwj_cell"><i data-lucide="download"></i><span class="lwj_cell-name">download</span></div>
+      <div class="lwj_cell"><i data-lucide="upload"></i><span class="lwj_cell-name">upload</span></div>
+      <div class="lwj_cell"><i data-lucide="share-2"></i><span class="lwj_cell-name">share-2</span></div>
+      <div class="lwj_cell"><i data-lucide="copy"></i><span class="lwj_cell-name">copy</span></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION · FILE & STATUS ========== -->
+  <section class="lwj_section">
+    <div class="lwj_section-head">
+      <span class="lwj_section-tick"></span>
+      <span class="lwj_section-label">file &amp; status</span>
+      <span class="lwj_section-meta">12 glyphs</span>
+    </div>
+    <div class="lwj_grid">
+      <div class="lwj_cell"><i data-lucide="folder"></i><span class="lwj_cell-name">folder</span></div>
+      <div class="lwj_cell"><i data-lucide="file"></i><span class="lwj_cell-name">file</span></div>
+      <div class="lwj_cell"><i data-lucide="file-text"></i><span class="lwj_cell-name">file-text</span></div>
+      <div class="lwj_cell"><i data-lucide="image"></i><span class="lwj_cell-name">image</span></div>
+      <div class="lwj_cell"><i data-lucide="video"></i><span class="lwj_cell-name">video</span></div>
+      <div class="lwj_cell"><i data-lucide="check-circle"></i><span class="lwj_cell-name">check-circle</span></div>
+      <div class="lwj_cell"><i data-lucide="alert-circle"></i><span class="lwj_cell-name">alert-circle</span></div>
+      <div class="lwj_cell"><i data-lucide="info"></i><span class="lwj_cell-name">info</span></div>
+      <div class="lwj_cell"><i data-lucide="help-circle"></i><span class="lwj_cell-name">help-circle</span></div>
+      <div class="lwj_cell"><i data-lucide="loader"></i><span class="lwj_cell-name">loader</span></div>
+      <div class="lwj_cell"><i data-lucide="moon"></i><span class="lwj_cell-name">moon</span></div>
+      <div class="lwj_cell"><i data-lucide="sun"></i><span class="lwj_cell-name">sun</span></div>
+    </div>
+  </section>
+
+  <!-- ========== TITLE BLOCK ========== -->
+  <footer class="lwj_titleblock">
+    <span>DRAWING NO.</span>
+    <b>LUC-2026.10.22</b>
+    <span class="lwj_tb-border">lucide-icons · ISC License · click any glyph to copy its name</span>
+    <a href="index.html">← 返回首页</a>
+  </footer>
+
+</div>
+
+<div class="lwj_toast" id="lwj_toast"></div>
+
+<script src="cdn/lucide/lucide.min.js"></script>
+<script>
+  lucide.createIcons();
+
+  var lwj_toastEl = document.getElementById('lwj_toast');
+  var lwj_toastTimer = null;
+  function lwj_showToast(msg) {
+    lwj_toastEl.textContent = msg;
+    lwj_toastEl.setAttribute('data-show', '1');
+    clearTimeout(lwj_toastTimer);
+    lwj_toastTimer = setTimeout(function() {
+      lwj_toastEl.setAttribute('data-show', '0');
+    }, 1600);
+  }
+
+  document.querySelectorAll('.lwj_cell').forEach(function(cell) {
+    cell.addEventListener('click', function() {
+      var name = cell.querySelector('i').getAttribute('data-lucide');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(name).then(function() {
+          lwj_showToast('copied → ' + name);
+        }).catch(function() {
+          lwj_showToast(name);
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

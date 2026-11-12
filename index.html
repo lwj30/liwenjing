@@ -1,0 +1,341 @@
+<!--
+  作者：李汶静
+  创建时间：2026-11-09 10:35
+  使用模型：DeepSeek-V4.1-Flash
+  功能：课堂作品集首页，集中展示 Swiper 光影展、Swiper 11 本地组件库、汽车导购 Tab、新闻 Tab、
+        Font Awesome 图标、Lucide 图标与抓小球游戏七个项目的入口卡片。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课堂作品集 | 高级网页设计</title>
+  <style>
+    /* ====== 基础重置 ====== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background: radial-gradient(900px 500px at 50% -8%, #ffffff, #eef3fb 60%, #e9eef9);
+      min-height: 100vh;
+      padding: 64px 24px 80px;
+      color: #1a2340;
+    }
+
+    .lwj_wrap { max-width: 1060px; margin: 0 auto; }
+
+    /* ====== 页头 ====== */
+    .lwj_head { text-align: center; margin-bottom: 52px; }
+
+    /* 彩色方块 Logo：2×2 圆角小块 */
+    .lwj_logo {
+      display: inline-grid;
+      grid-template-columns: repeat(2, 16px);
+      grid-template-rows: repeat(2, 16px);
+      gap: 3px;
+      vertical-align: middle;
+      margin-right: 16px;
+    }
+    .lwj_logo span { border-radius: 3px; }
+    .lwj_logo span:nth-child(1) { background: #2fb457; }
+    .lwj_logo span:nth-child(2) { background: #e2b33c; }
+    .lwj_logo span:nth-child(3) { background: #2f6fd0; }
+    .lwj_logo span:nth-child(4) { background: #d8424f; }
+
+    .lwj_head h1 {
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #16244a;
+    }
+    .lwj_head p {
+      margin-top: 16px;
+      font-size: 15px;
+      color: #64748f;
+      letter-spacing: 0.04em;
+    }
+    .lwj_head .lwj_pill {
+      display: inline-block;
+      margin-top: 22px;
+      padding: 7px 20px;
+      border-radius: 999px;
+      background: #e6effc;
+      border: 1px solid #cfe0f7;
+      color: #2f6fd0;
+      font-size: 13.5px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ====== 卡片区（桌面三列，窄屏逐级降列） ====== */
+    .lwj_cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 26px;
+    }
+    @media (max-width: 980px) {
+      .lwj_cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .lwj_cards { grid-template-columns: 1fr; }
+    }
+
+    .lwj_card {
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 30px 30px 26px;
+      box-shadow: 0 14px 40px rgba(31, 56, 105, 0.1);
+      border: 1px solid rgba(214, 226, 245, 0.9);
+    }
+
+    /* 序号徽章 */
+    .lwj_badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .lwj_badge--swiper { background: linear-gradient(150deg, #2f7de0, #1c4f9c); }
+    .lwj_badge--tab { background: linear-gradient(150deg, #f08a2c, #cf3f24); }
+    .lwj_badge--cdn { background: linear-gradient(150deg, #38b07a, #1d7750); }
+    .lwj_badge--news { background: linear-gradient(150deg, #7a5cf0, #4b30c0); }
+    .lwj_badge--fa { background: linear-gradient(150deg, #3c5064, #16212c); }
+    .lwj_badge--fa, .lwj_badge--lu { font-size: 15px; letter-spacing: 0.02em; }
+    .lwj_badge--lu { background: linear-gradient(150deg, #1f97b8, #0f5468); }
+    .lwj_badge--game { background: linear-gradient(150deg, #b04a8f, #6d2454); }
+
+    .lwj_card h2 {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #16244a;
+      margin-bottom: 8px;
+    }
+    .lwj_card .lwj_card-sub {
+      font-size: 13px;
+      color: #8a97b0;
+      margin-bottom: 18px;
+    }
+    .lwj_card .lwj_card-desc {
+      font-size: 14.5px;
+      line-height: 1.85;
+      color: #45516b;
+      flex: 1;
+    }
+
+    /* 技术标签 */
+    .lwj_tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0 22px;
+    }
+    .lwj_tags span {
+      font-size: 12.5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+    .lwj_tags--swiper span { background: #eaf2fe; color: #2f6fd0; }
+    .lwj_tags--tab span { background: #fdf1e4; color: #c0712a; }
+    .lwj_tags--cdn span { background: #e8f7ef; color: #1d7750; }
+    .lwj_tags--news span { background: #f0eafd; color: #5b39c4; }
+    .lwj_tags--fa span { background: #eef2f6; color: #33465a; }
+    .lwj_tags--lu span { background: #e6f6fa; color: #116b84; }
+    .lwj_tags--game span { background: #fbeaf3; color: #8f3a6b; }
+
+    .lwj_card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14.5px;
+      font-weight: 700;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    .lwj_card-link--swiper { color: #2361c0; }
+    .lwj_card-link--tab { color: #c8452f; }
+    .lwj_card-link--cdn { color: #1d7750; }
+    .lwj_card-link--news { color: #5b39c4; }
+    .lwj_card-link--fa { color: #33465a; }
+    .lwj_card-link--lu { color: #116b84; }
+    .lwj_card-link--game { color: #8f3a6b; }
+    .lwj_card-link:hover { text-decoration: underline; }
+
+    /* ====== 页脚 ====== */
+    .lwj_foot {
+      text-align: center;
+      margin-top: 56px;
+      font-size: 12.5px;
+      color: #94a1b8;
+      letter-spacing: 0.08em;
+    }
+    .lwj_foot a {
+      color: #2f6fd0;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(47, 111, 208, 0.5);
+    }
+    .lwj_foot a:hover { color: #16244a; }
+  </style>
+</head>
+<body>
+
+  <div class="lwj_wrap">
+
+    <!-- ====== 页头 ====== -->
+    <header class="lwj_head">
+      <div class="lwj_logo" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <h1>课堂作品集</h1>
+      <p>高级网页设计 · 2026-2027-1 · 李汶静</p>
+      <div class="lwj_pill">Swiper · Tab · 图标 · 游戏</div>
+    </header>
+
+    <!-- ====== 作品卡片 ====== -->
+    <main class="lwj_cards">
+
+      <!-- 作品一：Swiper 光影展 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--swiper">4</div>
+        <h2>Swiper 大国重器光影展</h2>
+        <div class="lwj_card-sub">课堂操作任务 · 学生版</div>
+        <p class="lwj_card-desc">
+          任务一用两轮提示词各 4 个迷你演示对比生成效果；任务二用 7 个按钮切换
+          slide / fade / cube / coverflow / flip / cards / creative，并用滑块实时调节
+          creative 电影墙参数；任务三再用第 8 种 vertical 垂直翻页演示第六件展品「爱达 · 魔都号」
+          与键盘 / 滚轮 / 双击 / 视差交互。
+        </p>
+        <div class="lwj_tags lwj_tags--swiper">
+          <span>Swiper 11</span>
+          <span>autoplay</span>
+          <span>pagination</span>
+          <span>navigation</span>
+          <span>effect</span>
+        </div>
+        <a href="swiper.html" class="lwj_card-link lwj_card-link--swiper">打开作业 →</a>
+      </section>
+
+      <!-- 作品二：Swiper 本地组件库 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--cdn">11</div>
+        <h2>Swiper 11 组件库</h2>
+        <div class="lwj_card-sub">离线依赖 · cdn/swiper</div>
+        <p class="lwj_card-desc">
+          把 Swiper 的样式与脚本落到本地 cdn 目录，断网、双击 HTML 都能正常运行：
+          swiper-bundle.min.css 负责布局与分页样式，swiper-bundle.min.js 是带全部模块的 UMD 完整包。
+        </p>
+        <div class="lwj_tags lwj_tags--cdn">
+          <span>离线可用</span>
+          <span>UMD 完整包</span>
+          <span>v11.2.10</span>
+        </div>
+        <a href="swiper-cdn.html" class="lwj_card-link lwj_card-link--cdn">打开项目 →</a>
+      </section>
+
+      <!-- 作品三：汽车导购 Tab -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--tab">3</div>
+        <h2>汽车导购 Tab 选项卡</h2>
+        <div class="lwj_card-sub">课堂操作任务 · 之前的作品</div>
+        <p class="lwj_card-desc">
+          使用原生 JS 实现 Tab 切换交互，通过点击选项卡展示不同品牌汽车的导购内容，
+          适合移动端展示。
+        </p>
+        <div class="lwj_tags lwj_tags--tab">
+          <span>原生 JS</span>
+          <span>Tab 切换</span>
+          <span>汽车导购</span>
+        </div>
+        <a href="tab-car.html" class="lwj_card-link lwj_card-link--tab">打开作业 →</a>
+      </section>
+
+      <!-- 作品四：新闻 Tab -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--news">2</div>
+        <h2>新闻 Tab 选项卡</h2>
+        <div class="lwj_card-sub">课堂操作任务 · Tab 组件复用</div>
+        <p class="lwj_card-desc">
+          新闻频道的分类切换：点击「推荐 / 热点 / 科技 / 体育」等选项卡，切换对应的新闻列表，
+          切换逻辑抽成独立的 tabs.js 模块供多个页面复用。
+        </p>
+        <div class="lwj_tags lwj_tags--news">
+          <span>原生 JS</span>
+          <span>模块复用</span>
+          <span>新闻列表</span>
+        </div>
+        <a href="tab-news.html" class="lwj_card-link lwj_card-link--news">打开作业 →</a>
+      </section>
+
+      <!-- 作品五：Font Awesome 字体图标 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--fa">FA</div>
+        <h2>Font Awesome 字体图标</h2>
+        <div class="lwj_card-sub">图标练习 · 纸张活字标本册</div>
+        <p class="lwj_card-desc">
+          用 <code>i.fa-solid.fa-*</code> 渲染字体图标，配合本地 cdn/fontawesome 与离线字体文件，
+          做成纸张活字风格的图标标本册页面。
+        </p>
+        <div class="lwj_tags lwj_tags--fa">
+          <span>字体图标</span>
+          <span>离线字体</span>
+          <span>Font Awesome</span>
+        </div>
+        <a href="iconfont-1.html" class="lwj_card-link lwj_card-link--fa">打开作业 →</a>
+      </section>
+
+      <!-- 作品六：Lucide 内联 SVG 图标 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--lu">LU</div>
+        <h2>Lucide 内联 SVG 图标</h2>
+        <div class="lwj_card-sub">图标练习 · 蓝图草稿风格</div>
+        <p class="lwj_card-desc">
+          标记写成 <code>i[data-lucide]</code>，再由 lucide.createIcons() 转成内联 SVG，
+          用蓝图草稿的视觉风格展示矢量图标。
+        </p>
+        <div class="lwj_tags lwj_tags--lu">
+          <span>内联 SVG</span>
+          <span>data-lucide</span>
+          <span>Lucide</span>
+        </div>
+        <a href="iconfont-2.html" class="lwj_card-link lwj_card-link--lu">打开作业 →</a>
+      </section>
+
+      <!-- 作品七：抓小球小游戏 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--game">G</div>
+        <h2>两分钟抓小球小游戏</h2>
+        <div class="lwj_card-sub">课程主项目 · 游戏</div>
+        <p class="lwj_card-desc">
+          限时点击小游戏：点中正确球 +2 分、误点陷阱球 -3 分、点空白 -1 分，
+          内置 idle → playing → ended 状态机、倒计时与陷阱球刷新逻辑。
+        </p>
+        <div class="lwj_tags lwj_tags--game">
+          <span>原生 JS</span>
+          <span>DOM 交互</span>
+          <span>状态机</span>
+        </div>
+        <a href="game.html" class="lwj_card-link lwj_card-link--game">打开项目 →</a>
+      </section>
+
+    </main>
+
+    <footer class="lwj_foot">
+      高级网页设计课程作业 · 原生 HTML / CSS / ES6 · 全部资源离线可用<br>
+      <a href="prompt.md">任务一 · 提示词迭代全流程（prompt.md）</a>
+    </footer>
+
+  </div>
+
+</body>
+</html>

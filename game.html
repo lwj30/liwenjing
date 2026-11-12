@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抓小球小游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 顶部状态栏 -->
+    <header class="status-bar">
+        <div class="status-item">
+            <span class="label">分数</span>
+            <span class="value" id="score-display">0</span>
+        </div>
+        <div class="status-item">
+            <span class="label">倒计时</span>
+            <span class="value" id="timer-display">02:00</span>
+        </div>
+        <button id="start-btn" class="btn btn-primary">开始游戏</button>
+    </header>
+
+    <!-- 游戏主区域 -->
+    <main class="game-area" id="game-area">
+        <div class="ball" id="ball"></div>
+        <div class="wrong-ball" id="wrongBall" hidden>💀</div>
+    </main>
+
+    <!-- 游戏结束遮罩 -->
+    <div class="overlay" id="overlay" hidden>
+        <div class="overlay-card">
+            <h2>游戏结束</h2>
+            <p>最终得分：<span id="final-score">0</span></p>
+            <button id="restart-btn" class="btn btn-primary">再来一局</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

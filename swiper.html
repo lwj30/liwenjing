@@ -1,0 +1,1284 @@
+<!--
+  作者：李汶静
+  创建时间：2026-11-09 10:20
+  使用模型：DeepSeek-V4.1-Flash
+  功能：大国重器光影展页面，任务一用两轮提示词各 4 个迷你演示对比效果，任务二演示 Swiper 七种效果
+        并用滑块实时调节 creative 电影墙参数，任务三展示第六件展品与键盘 / 滚轮 / 双击 / 视差交互。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大国重器 · 光影展 | Swiper 轮播</title>
+  <link rel="stylesheet" href="cdn/swiper/swiper-bundle.min.css">
+  <style>
+    /* ====== 主题变量：暗色展厅 + 鎏金点缀 ====== */
+    :root {
+      --lwj_bg: #080b10;
+      --lwj_panel: #10161f;
+      --lwj_line: rgba(217, 180, 91, 0.22);
+      --lwj_gold: #d9b45b;
+      --lwj_text: #eaeef3;
+      --lwj_muted: #8d99a6;
+      --lwj_red: #c8452f;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(217, 180, 91, 0.16), transparent 70%),
+        var(--lwj_bg);
+      color: var(--lwj_text);
+      padding: 48px 20px 72px;
+      line-height: 1.7;
+    }
+
+    .lwj_wrap { max-width: 1120px; margin: 0 auto; }
+
+    /* ====== 页头 ====== */
+    .lwj_header {
+      text-align: center;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--lwj_line);
+      margin-bottom: 40px;
+    }
+    .lwj_header .lwj_kicker {
+      font-size: 12px;
+      letter-spacing: 0.32em;
+      color: var(--lwj_muted);
+      text-transform: uppercase;
+    }
+    .lwj_header h1 {
+      font-size: 40px;
+      letter-spacing: 0.14em;
+      margin: 14px 0 10px;
+      background: linear-gradient(100deg, #f3e0a8, var(--lwj_gold) 55%, #a3822f);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .lwj_header p { font-size: 13px; color: var(--lwj_muted); letter-spacing: 0.08em; }
+
+    /* ====== 演示区块 ====== */
+    .lwj_demo {
+      background: var(--lwj_panel);
+      border: 1px solid var(--lwj_line);
+      border-radius: 14px;
+      padding: 26px 26px 22px;
+      margin-bottom: 34px;
+    }
+    .lwj_demo-head { margin-bottom: 18px; }
+    .lwj_demo-head h2 {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .lwj_demo-head h2::before {
+      content: "";
+      width: 4px;
+      height: 18px;
+      background: var(--lwj_gold);
+      border-radius: 2px;
+    }
+    .lwj_demo-head p { font-size: 13px; color: var(--lwj_muted); margin-top: 8px; }
+    .lwj_demo-head code {
+      color: var(--lwj_gold);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+    }
+
+    /* ====== 轮播通用外观 ====== */
+    .lwj_swiper {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+    }
+    .lwj_swiper--small { max-width: 760px; margin: 0 auto; }
+    .lwj_slide { position: relative; overflow: hidden; }
+    .lwj_slide img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: transform 0.4s ease;
+    }
+    /* 任务三：双击放大 / 再双击还原 */
+    .lwj_slide.lwj_zoomed img { transform: scale(1.75); }
+    .lwj_slide-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 54px 24px 18px;
+      background: linear-gradient(to top, rgba(4, 7, 11, 0.9), rgba(4, 7, 11, 0));
+      display: flex;
+      align-items: flex-end;
+      gap: 14px;
+    }
+    .lwj_slide-index {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 26px;
+      color: var(--lwj_gold);
+      line-height: 1;
+      letter-spacing: 0.06em;
+    }
+    .lwj_slide-text { flex: 1; }
+    .lwj_slide-text strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: 0.06em;
+    }
+    .lwj_slide-text span { font-size: 12px; color: var(--lwj_muted); }
+
+    /* 三个小演示统一 16:9 高度 */
+    .lwj_swiper--small .lwj_slide { aspect-ratio: 16 / 9; }
+
+    /* ====== 主演示：七种效果 ====== */
+    .lwj_main-swiper {
+      height: 520px;
+      perspective: 1400px;
+    }
+    .lwj_main-swiper .lwj_slide { height: 100%; }
+
+    /* 效果切换按钮条 */
+    .lwj_effect-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .lwj_effect-btn {
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(234, 238, 243, 0.16);
+      background: transparent;
+      color: var(--lwj_muted);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lwj_effect-btn:hover { color: var(--lwj_text); border-color: rgba(217, 180, 91, 0.5); }
+    .lwj_effect-btn.lwj_effect-active {
+      background: var(--lwj_gold);
+      border-color: var(--lwj_gold);
+      color: #241b05;
+      font-weight: 700;
+    }
+    .lwj_effect-btn.lwj_creative-btn {
+      border-style: dashed;
+      border-color: rgba(200, 69, 47, 0.7);
+      color: #e98a78;
+    }
+    .lwj_effect-btn.lwj_creative-btn.lwj_effect-active {
+      background: var(--lwj_red);
+      border-color: var(--lwj_red);
+      color: #fff;
+    }
+
+    /* 键盘开关 */
+    .lwj_keyboard-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--lwj_muted);
+    }
+    .lwj_keyboard-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .lwj_keyboard-bar input { accent-color: var(--lwj_gold); cursor: pointer; }
+    .lwj_keyboard-state {
+      color: var(--lwj_gold);
+      border: 1px solid var(--lwj_line);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 12px;
+    }
+    .lwj_keyboard-hint {
+      border: 1px solid rgba(234, 238, 243, 0.16);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 12px;
+      color: var(--lwj_text);
+    }
+
+    /* ====== 任务二：参数表与变换实验台 ====== */
+    .lwj_param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+    .lwj_param-table th,
+    .lwj_param-table td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(234, 238, 243, 0.1);
+      vertical-align: top;
+    }
+    .lwj_param-table th { color: var(--lwj_gold); font-weight: 600; white-space: nowrap; }
+    .lwj_param-table td { color: var(--lwj_muted); }
+    .lwj_param-table td code {
+      color: var(--lwj_text);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12.5px;
+    }
+
+    .lwj_lab {
+      margin-top: 22px;
+      border-top: 1px dashed rgba(234, 238, 243, 0.14);
+      padding-top: 18px;
+    }
+    .lwj_lab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px 24px;
+    }
+    .lwj_lab-item { font-size: 12.5px; color: var(--lwj_muted); }
+    .lwj_lab-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .lwj_lab-head output {
+      color: var(--lwj_gold);
+      font-family: Consolas, "Courier New", monospace;
+    }
+    .lwj_lab-item input[type="range"] {
+      width: 100%;
+      accent-color: var(--lwj_gold);
+      cursor: pointer;
+    }
+    .lwj_lab-apply {
+      margin-top: 18px;
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: 1px solid var(--lwj_gold);
+      background: transparent;
+      color: var(--lwj_gold);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lwj_lab-apply:hover { background: var(--lwj_gold); color: #241b05; }
+
+    /* ====== 任务三：delay 现场调节 ====== */
+    .lwj_delay-box {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1px solid rgba(234, 238, 243, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--lwj_muted);
+    }
+    .lwj_delay-box input[type="number"] {
+      width: 110px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--lwj_line);
+      background: #060a0f;
+      color: var(--lwj_gold);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
+    .lwj_delay-go {
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--lwj_gold);
+      background: transparent;
+      color: var(--lwj_gold);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lwj_delay-go:hover { background: var(--lwj_gold); color: #241b05; }
+    .lwj_delay-result { color: var(--lwj_text); font-size: 12.5px; }
+
+    /* ====== 任务一：两轮提示词 + 8 个迷你演示（2 横 × 2 纵） ====== */
+    .lwj_round { margin-top: 22px; }
+    .lwj_round-title {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--lwj_text);
+    }
+    .lwj_round-title span { font-size: 12px; font-weight: 400; color: var(--lwj_muted); }
+    .lwj_prompt-box {
+      margin: 12px 0 18px;
+      padding: 14px 18px;
+      border-left: 3px solid var(--lwj_gold);
+      border-radius: 0 8px 8px 0;
+      background: rgba(217, 180, 91, 0.07);
+      font-size: 13px;
+      color: #c9d2dc;
+      line-height: 1.8;
+    }
+    .lwj_mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 720px) {
+      .lwj_mini-grid { grid-template-columns: 1fr; }
+    }
+    .lwj_mini-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(234, 238, 243, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .lwj_mini {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    .lwj_mini .lwj_slide { height: 100%; }
+    .lwj_mini-cap {
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--lwj_muted);
+      line-height: 1.65;
+    }
+    .lwj_mini-cap b { color: var(--lwj_gold); font-weight: 600; }
+    .lwj_mini-cap code {
+      color: var(--lwj_text);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+    }
+
+    /* ====== 官方示例代码摘录 / 第 8 种翻页方式 ====== */
+    .lwj_code-note { margin-top: 14px; }
+    .lwj_code-note pre {
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(234, 238, 243, 0.12);
+      background: #060a0f;
+      overflow-x: auto;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12.5px;
+      color: #b9c6d4;
+      line-height: 1.75;
+    }
+    .lwj_effect-btn.lwj_vertical-btn {
+      border-style: dashed;
+      border-color: rgba(90, 150, 255, 0.7);
+      color: #8fb8ff;
+    }
+    .lwj_effect-btn.lwj_vertical-btn.lwj_effect-active {
+      background: #2f6fd0;
+      border-color: #2f6fd0;
+      color: #fff;
+    }
+    /* vertical 模式下圆点分页器竖排在右侧 */
+    #wySw5.lwj_vertical-mode .swiper-pagination {
+      right: 14px;
+      left: auto;
+      bottom: auto;
+      top: 50%;
+      transform: translateY(-50%);
+      width: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Swiper 默认组件换色 */
+    .lwj_demo .swiper-pagination-bullet {
+      background: #ffffff;
+      opacity: 0.35;
+    }
+    .lwj_demo .swiper-pagination-bullet-active {
+      background: var(--lwj_gold);
+      opacity: 1;
+    }
+    .lwj_demo .swiper-button-next,
+    .lwj_demo .swiper-button-prev {
+      color: var(--lwj_gold);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+    }
+    .lwj_demo .swiper-button-next::after,
+    .lwj_demo .swiper-button-prev::after { font-size: 22px; }
+
+    /* ====== 答辩笔记 ====== */
+    .lwj_notes {
+      background: rgba(217, 180, 91, 0.06);
+      border: 1px solid var(--lwj_line);
+      border-radius: 14px;
+      padding: 24px 26px;
+      margin-bottom: 34px;
+    }
+    .lwj_notes h2 {
+      font-size: 17px;
+      margin-bottom: 14px;
+      letter-spacing: 0.06em;
+      color: var(--lwj_gold);
+    }
+    .lwj_notes dl { font-size: 13.5px; }
+    .lwj_notes dt { margin-top: 14px; color: var(--lwj_text); font-weight: 700; }
+    .lwj_notes dd { color: var(--lwj_muted); margin-top: 4px; }
+
+    /* ====== 页脚 ====== */
+    .lwj_footer { text-align: center; }
+    .lwj_back-home {
+      display: inline-block;
+      color: var(--lwj_muted);
+      text-decoration: none;
+      font-size: 13px;
+      border: 1px solid var(--lwj_line);
+      border-radius: 999px;
+      padding: 9px 26px;
+      transition: all 0.2s;
+    }
+    .lwj_back-home:hover { color: var(--lwj_gold); border-color: var(--lwj_gold); }
+  </style>
+</head>
+<body>
+
+  <div class="lwj_wrap">
+
+    <!-- ====== 页头 ====== -->
+    <header class="lwj_header">
+      <div class="lwj_kicker">高级网页设计 · 2026-2027-1</div>
+      <h1>大国重器 · 光影展</h1>
+      <p>任务一 两轮提示词各 4 个演示 · 任务二 creative 电影墙参数实验台 · 任务三 第六件展品与键盘 / 滚轮 / 双击 / 视差</p>
+    </header>
+
+    <!-- ====== 任务一：两轮提示词与生成效果 ====== -->
+    <section class="lwj_demo">
+      <div class="lwj_demo-head">
+        <h2>任务一 · 两轮提示词与生成效果</h2>
+        <p>两轮提示词原文均引自 <code>lwj_prompt.md</code>（记录 29）。两组各四个演示，横向 2 个、纵向 2 行，共 8 个；
+          每个演示下方用文字注明它所用的切换形式。</p>
+      </div>
+
+      <!-- 第一轮 -->
+      <div class="lwj_round">
+        <h3 class="lwj_round-title">第一轮提示词<span>引自 lwj_prompt.md 记录 29 · 第 1 条</span></h3>
+        <blockquote class="lwj_prompt-box">
+          “把演示图一部分需要实现在进行轮播时没有时间间隔的进行切换，演示图二部分需要实现在3.2秒的时间间隔进行自动切换并且如果在进行手动切换图片的情况下还能就在3.2秒的时间间隔下进行自动切换的形式轮播，演示图三需要在进行切换轮播图的时候在图片上显示圆点，并且在点击圆点的时候也能够进行切换页面，演示图四需要让轮播图的出示效果为cube的格式。这个要求生成演示图后放在任务一的第一轮提示词的范围内，按照横纵各放两个演示图总共放下四个演示图的格式在任务一内。”
+        </blockquote>
+        <div class="lwj_mini-grid">
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR1A">
+              <div class="swiper-wrapper"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>① 无间隔切换</b>：切换形式为 <code>speed: 0</code>（瞬时跳转、没有过渡动画）
+              ＋ <code>autoplay.delay: 1200</code>（每 1.2 秒换一张）</p>
+          </div>
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR1B">
+              <div class="swiper-wrapper"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>② 3.2 秒自动</b>：切换形式为 <code>autoplay: { delay: 3200, disableOnInteraction: false }</code>，
+              平滑滑动，手动拖拽后仍继续</p>
+          </div>
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR1C">
+              <div class="swiper-wrapper"></div>
+              <div class="swiper-pagination"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>③ 圆点分页</b>：切换形式为 <code>pagination: { clickable: true }</code>，
+              图片上叠圆点，点圆点直接跳到对应页</p>
+          </div>
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR1D">
+              <div class="swiper-wrapper"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>④ 初始 cube</b>：切换形式为 <code>effect: 'cube'</code> ＋
+              <code>cubeEffect</code> 阴影，立方体 3D 翻转</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二轮 -->
+      <div class="lwj_round">
+        <h3 class="lwj_round-title">第二轮提示词<span>引自 lwj_prompt.md 记录 29 · 第 2 条</span></h3>
+        <blockquote class="lwj_prompt-box">
+          “把这个要求① 无缝循环 ② 3.2 秒自动翻页且手动操作后不停止 ③ 圆点分页器可点击 ④ 初始效果为cube.生成演示图后放在任务一的第二轮提示词的范围内，按照横纵各放两个演示图总共放下四个演示图的格式在任务一内。”
+        </blockquote>
+        <div class="lwj_mini-grid">
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR2A">
+              <div class="swiper-wrapper"></div>
+              <div class="swiper-pagination"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>① 无缝循环</b>：切换形式为 <code>loop: true</code>，
+              第 6 张之后直接接第 1 张，不会倒带跳回</p>
+          </div>
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR2B">
+              <div class="swiper-wrapper"></div>
+              <div class="swiper-pagination"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>② 3.2 秒自动</b>：切换形式为 <code>autoplay: { delay: 3200, disableOnInteraction: false }</code>，
+              拖动后不停播</p>
+          </div>
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR2C">
+              <div class="swiper-wrapper"></div>
+              <div class="swiper-pagination"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>③ 圆点可点击</b>：切换形式为 <code>pagination: { clickable: true }</code>，
+              点圆点切换到对应展品</p>
+          </div>
+          <div class="lwj_mini-card">
+            <div class="swiper lwj_swiper lwj_mini" id="lwjR2D">
+              <div class="swiper-wrapper"></div>
+              <div class="swiper-pagination"></div>
+            </div>
+            <p class="lwj_mini-cap"><b>④ 初始 cube</b>：切换形式为 <code>effect: 'cube'</code> ＋
+              <code>cubeEffect: { shadow: true, slideShadows: true }</code></p>
+          </div>
+        </div>
+      </div>
+
+      <a href="prompt.md" class="lwj_back-home">查看两轮完整提示词记录 prompt.md →</a>
+    </section>
+
+    <!-- ====== 任务二：creative 自定义变换（第 7 种效果） ====== -->
+    <section class="lwj_demo">
+      <div class="lwj_demo-head">
+        <h2>任务二 · creative 自定义变换（本课未讲第 7 种效果）</h2>
+        <p>主演示 <code>#wySw4</code> 初始效果为 <code>cube</code>，配置为「无缝循环 + 3.2 秒自动翻页且手动后不停止 + 圆点可点击」。
+          第 7 个按钮参考官方示例 <code>swiper/demo/257-effect-creative.html</code>，做「电影选片墙」：
+          上一张缩小左移并带角度，下一张右移放大进场。下方滑块实时调参，调完点按钮即可在上方演示图中看到差别。</p>
+      </div>
+
+      <!-- 任务二对应提示词原文 -->
+      <blockquote class="lwj_prompt-box">
+        “课堂上只讲了 6 种 effect，Swiper 其实还有第 7 种 creative（自定义变换），本课未讲解。请打开官方示例
+        swiper/demo/257-effect-creative.html，配合 AI 读懂 creativeEffect 的 transform 写法，为演示四新增第 7 个按钮
+        「creative 电影墙」。效果要求：上一张缩小左移并带角度、下一张放大右移进场（参数自定，但要“像电影选片墙”）；
+        实现后须向 AI 追问并用自己的话写下：prev / next 的 transform 各控制什么？答辩抽问：transform 里的百分号是相对谁的？
+        改一个数值让卡片转 20 度试试？”
+      </blockquote>
+
+      <!-- 官方示例 transform 写法拆解 -->
+      <div class="lwj_code-note">
+        <h3 class="lwj_round-title">官方示例 257-effect-creative 的 transform 写法<span>prev 管离场、next 管待命</span></h3>
+        <pre>creativeEffect: {
+  prev: { shadow: true, translate: [0, 0, -400] },   // 上一张：向纵深后退 400px 离场
+  next: { translate: ['100%', 0, 0] }                 // 下一张：从右侧 100% 自身宽度处待命
+}</pre>
+        <p>读法：translate 是 <code>[x, y, z]</code> 三元组，x 写百分比时以 slide 自身宽度为基准，z 是纵深（px）；
+          rotate 是 <code>[rx, ry, rz]</code> 角度（deg）；scale 是缩放倍数；opacity 是 0~1。
+          官方示例只做了“后退 + 右侧待命”，要变成电影墙，就得让 prev 同时左移、缩小、绕 Z 轴倾斜，
+          next 同时右移、放大，翻页时才有“选片墙”的层次感。</p>
+      </div>
+
+      <div class="lwj_effect-bar" id="lwjEffectBar">
+        <button type="button" class="lwj_effect-btn" data-effect="slide">slide</button>
+        <button type="button" class="lwj_effect-btn" data-effect="fade">fade</button>
+        <button type="button" class="lwj_effect-btn lwj_effect-active" data-effect="cube">cube</button>
+        <button type="button" class="lwj_effect-btn" data-effect="coverflow">coverflow</button>
+        <button type="button" class="lwj_effect-btn" data-effect="flip">flip</button>
+        <button type="button" class="lwj_effect-btn" data-effect="cards">cards</button>
+        <button type="button" class="lwj_effect-btn lwj_creative-btn" data-effect="creative">creative 电影墙</button>
+      </div>
+
+      <div class="swiper lwj_swiper lwj_main-swiper" id="wySw4">
+        <div class="swiper-wrapper"></div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+      </div>
+
+      <div class="lwj_keyboard-bar">
+        <label>
+          <input type="checkbox" id="lwjKeyboardToggle" checked>
+          键盘控制（课堂上没讲的能力）
+        </label>
+        <span class="lwj_keyboard-state" id="lwjKeyboardState">已开启</span>
+        <label>
+          <input type="checkbox" id="lwjMousewheelToggle">
+          鼠标滚轮翻页
+        </label>
+        <span class="lwj_keyboard-state" id="lwjMousewheelState">已关闭</span>
+        <span>点击展区后按 <span class="lwj_keyboard-hint">←</span>
+          <span class="lwj_keyboard-hint">→</span> 可翻页，
+          双击展品可放大、再双击还原</span>
+      </div>
+
+      <!-- creative 参数实验台：拖动滑块 → 点应用 → 上方演示立即变为电影墙 -->
+      <div class="lwj_lab">
+        <div class="lwj_lab-grid">
+          <div class="lwj_lab-item">
+            <div class="lwj_lab-head"><span>上一张 translateX</span><output id="lwjOutPrevX">-20%</output></div>
+            <input type="range" id="lwjPrevX" min="-100" max="0" step="5" value="-20">
+          </div>
+          <div class="lwj_lab-item">
+            <div class="lwj_lab-head"><span>上一张 rotateZ</span><output id="lwjOutPrevRotate">-20°</output></div>
+            <input type="range" id="lwjPrevRotate" min="-90" max="90" step="5" value="-20">
+          </div>
+          <div class="lwj_lab-item">
+            <div class="lwj_lab-head"><span>上一张 scale</span><output id="lwjOutPrevScale">0.86</output></div>
+            <input type="range" id="lwjPrevScale" min="0.5" max="1.5" step="0.02" value="0.86">
+          </div>
+          <div class="lwj_lab-item">
+            <div class="lwj_lab-head"><span>下一张 translateX</span><output id="lwjOutNextX">100%</output></div>
+            <input type="range" id="lwjNextX" min="0" max="200" step="10" value="100">
+          </div>
+          <div class="lwj_lab-item">
+            <div class="lwj_lab-head"><span>下一张 scale</span><output id="lwjOutNextScale">1.12</output></div>
+            <input type="range" id="lwjNextScale" min="0.8" max="2" step="0.02" value="1.12">
+          </div>
+        </div>
+        <button type="button" class="lwj_lab-apply" id="lwjApplyCreative">应用参数并切到 creative</button>
+      </div>
+    </section>
+
+    <!-- ====== 任务二：creativeEffect 参数表与实现逻辑 ====== -->
+    <section class="lwj_notes">
+      <h2>任务二 · creativeEffect 自定义变换参数</h2>
+      <p>creativeEffect 用 prev / next 两组参数分别描述「离场的那一张」和「入场的那一张」，
+        每组都由 translate、rotate、scale、opacity、shadow 等字段组合而成。</p>
+      <table class="lwj_param-table">
+        <thead>
+          <tr>
+            <th>属性</th>
+            <th>含义</th>
+            <th>取值范围</th>
+            <th>其他可选设置</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>translate</code></td>
+            <td>平移位移</td>
+            <td>x / y 可写百分比（相对 slide 自身宽高）或 px，z 为 px 纵深</td>
+            <td>数组 <code>[x, y, z]</code>，或单个字符串 <code>'20%'</code></td>
+          </tr>
+          <tr>
+            <td><code>rotate</code></td>
+            <td>绕三轴旋转</td>
+            <td>单位 deg，常用 -180 ~ 180</td>
+            <td>数组 <code>[rx, ry, rz]</code>，只转 Z 轴写 <code>[0, 0, -20]</code></td>
+          </tr>
+          <tr>
+            <td><code>scale</code></td>
+            <td>缩放倍数</td>
+            <td>0 以上，1 表示原尺寸</td>
+            <td>直接写数字，如 <code>0.86</code></td>
+          </tr>
+          <tr>
+            <td><code>opacity</code></td>
+            <td>透明度</td>
+            <td>0 ~ 1</td>
+            <td>直接写数字</td>
+          </tr>
+          <tr>
+            <td><code>shadow</code></td>
+            <td>是否投影</td>
+            <td>true / false</td>
+            <td>布尔值</td>
+          </tr>
+          <tr>
+            <td><code>origin</code></td>
+            <td>变换原点</td>
+            <td>CSS transform-origin 关键字</td>
+            <td>如 <code>'center bottom'</code></td>
+          </tr>
+          <tr>
+            <td><code>translateEl</code> / <code>rotateEl</code></td>
+            <td>只对该元素做位移 / 旋转</td>
+            <td>CSS 选择器</td>
+            <td>如 <code>'.lwj_slide-caption'</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>实现逻辑：浏览器按 <code>translate() rotateZ() scale()</code> 的顺序合成 transform 矩阵，
+        所以“左移 + 缩小 + 转 -20°”在同一张卡片上是同时发生的；翻页时这组值会过渡到 0 值，卡片即归位正前方。</p>
+      <p>想亲手验证，回到上方任务二演示区拖动滑块、点「应用参数并切到 creative」，即可看到每一组数值对卡片姿态的直接影响。</p>
+    </section>
+
+    <!-- ====== 任务三演示：8 种翻页方式 + 第六件展品 + 交互 ====== -->
+    <section class="lwj_demo">
+      <div class="lwj_demo-head">
+        <h2>任务三 · 第八种翻页方式演示</h2>
+        <p>课堂讲了 6 种 effect，加上任务二的 creative 共 7 种；这里再新加第 8 种 <code>vertical</code> 垂直翻页：
+          <code>direction: 'vertical'</code> ＋ <code>effect: 'slide'</code>，整屏从下往上换页。
+          演示同时开启键盘、滚轮、双击放大与 parallax 视差，第六件展品「爱达 · 魔都号」也在轮播内。</p>
+      </div>
+
+      <blockquote class="lwj_prompt-box">
+        “② 挑一个课堂上没讲过的 Swiper 能力加上去：keyboard 键盘控制 / mousewheel 滚轮 / zoom 双击缩放 / parallax 视差，任选其一。
+        答辩四连问：这段代码什么意思？AI 第一次给的哪里不对、你改了什么？新参数的作用？现场把 delay 改成指定值并解释预期变化。”
+      </blockquote>
+
+      <div class="lwj_effect-bar" id="lwjTask3Bar">
+        <button type="button" class="lwj_effect-btn" data-method="slide">slide</button>
+        <button type="button" class="lwj_effect-btn" data-method="fade">fade</button>
+        <button type="button" class="lwj_effect-btn" data-method="cube">cube</button>
+        <button type="button" class="lwj_effect-btn" data-method="coverflow">coverflow</button>
+        <button type="button" class="lwj_effect-btn" data-method="flip">flip</button>
+        <button type="button" class="lwj_effect-btn" data-method="cards">cards</button>
+        <button type="button" class="lwj_effect-btn lwj_creative-btn" data-method="creative">creative 电影墙</button>
+        <button type="button" class="lwj_effect-btn lwj_vertical-btn lwj_effect-active" data-method="vertical">vertical 垂直翻页（第 8 种）</button>
+      </div>
+
+      <div class="swiper lwj_swiper lwj_main-swiper" id="wySw5">
+        <div class="swiper-wrapper"></div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+      </div>
+
+      <div class="lwj_keyboard-bar">
+        <label>
+          <input type="checkbox" id="lwjT3KeyboardToggle" checked>
+          键盘控制
+        </label>
+        <span class="lwj_keyboard-state" id="lwjT3KeyboardState">已开启</span>
+        <label>
+          <input type="checkbox" id="lwjT3MousewheelToggle">
+          鼠标滚轮翻页
+        </label>
+        <span class="lwj_keyboard-state" id="lwjT3MousewheelState">已关闭</span>
+        <span>点击演示区后按 <span class="lwj_keyboard-hint">←</span>
+          <span class="lwj_keyboard-hint">→</span>（vertical 模式下为 ↑ / ↓）翻页，
+          双击展品可放大、再双击还原</span>
+      </div>
+    </section>
+
+    <!-- ====== 任务三：第六件展品 + 未讲解能力 + delay 现场调节 ====== -->
+    <section class="lwj_notes">
+      <h2>任务三 · 第六件展品与课堂未讲能力</h2>
+      <dl>
+        <dt>演示位置与第八种翻页方式</dt>
+        <dd>上方任务三演示 <code>#wySw5</code> 共 8 个按钮：课堂 6 种 effect ＋ creative（第 7 种）＋
+          <code>vertical</code> 垂直翻页（第 8 种，<code>direction: 'vertical'</code> ＋ <code>effect: 'slide'</code>）。
+          切换同样采用「记录 realIndex → 销毁 → 重建」，不会跳回第一张。</dd>
+
+        <dt>① 新增第六件展品：爱达 · 魔都号</dt>
+        <dd>首艘国产大型邮轮，2024 年 1 月首航，配图为 A1 生成的横版 16:9 图
+          <code>images/exhibit-6-adora.jpg</code>。slide 结构与前五件完全一致：
+          <code>swiper-slide &gt; img + .lwj_slide-caption</code>，caption 内含序号、名称与一句说明，
+          并带 <code>data-swiper-parallax</code> 供视差使用。</dd>
+
+        <dt>② 使用的课堂未讲能力：keyboard 键盘控制</dt>
+        <dd>配置 <code>keyboard: { enabled: true }</code>，聚焦展区后按 ← / → 即翻页；
+          同时叠加了 <code>mousewheel</code> 滚轮翻页、双击放大（<code>dblclick</code> + CSS <code>scale</code>）
+          与 <code>parallax</code> 视差，共四种交互，满足「任选其一」的要求。</dd>
+
+        <dt>提交物</dt>
+        <dd>能运行的页面即本页；与 AI 的关键对话记录（提示词原文 + 重要往返）见
+          <a href="prompt.md">prompt.md</a>。</dd>
+      </dl>
+
+      <!-- delay 现场调节：答辩第四问「把 delay 改成指定值并解释预期变化」 -->
+      <div class="lwj_delay-box">
+        <span>现场改 delay：把 <code>autoplay.delay</code> 设为</span>
+        <input type="number" id="lwjDelayInput" min="500" max="20000" step="100" value="3200">
+        <span>毫秒</span>
+        <button type="button" class="lwj_delay-go" id="lwjDelayApply">应用</button>
+        <span class="lwj_delay-result" id="lwjDelayResult">当前 3200 毫秒 ≈ 3.2 秒自动翻一页。</span>
+      </div>
+
+      <dl>
+        <dt>答辩第一问：这段代码什么意思？</dt>
+        <dd><code>autoplay: { delay: 3200, disableOnInteraction: false }</code> 表示每 3200 毫秒自动切到下一张；
+          <code>disableOnInteraction: false</code> 表示用户拖动、点击箭头后自动播放不停止，重新计时继续翻页。</dd>
+
+        <dt>答辩第二问：AI 第一次给的哪里不对、你改了什么？</dt>
+        <dd>第一轮 AI 只给了 <code>autoplay: true</code>，既没有 3.2 秒也没有 <code>disableOnInteraction: false</code>，
+          手动拖一次自动播放就停了；改成完整对象并显式写 <code>false</code> 后才符合「手动后继续」的要求。</dd>
+
+        <dt>答辩第三问：新参数的作用？</dt>
+        <dd><code>delay</code> 控制停留时长，<code>disableOnInteraction</code> 控制交互后是否停播，
+          <code>clickable</code> 让圆点可点，<code>keyboard.enabled</code> 接管方向键，
+          <code>parallax</code> 让 caption 随纵深位移。</dd>
+
+        <dt>答辩第四问：把 delay 改成指定值，预期怎么变？</dt>
+        <dd>用上方输入框改成任意值：改小（如 1500）翻页更急促，改大（如 8000）停留更久；
+          <code>delay</code> 只影响自动翻页间隔，不改变手动切换的动画速度（那由 <code>speed</code> 控制）。</dd>
+      </dl>
+    </section>
+
+    <!-- ====== 答辩笔记 ====== -->
+    <section class="lwj_notes">
+      <h2>答辩笔记</h2>
+      <dl>
+        <dt>prev / next 的 transform 各控制什么？</dt>
+        <dd>prev 描述「已经翻过去的那一张」在左侧的形态（左移、缩小、带角度），next 描述「还没进来的下一张」
+          在右侧的待命形态（右移、放大），翻页时各自向 translate: [0, 0, 0] 归位。</dd>
+
+        <dt>transform 里的百分号是相对谁的？</dt>
+        <dd>相对每张 slide 自身的宽度（不是容器、也不是屏幕）。translate 的 x 写 -20%，
+          即向左移动自身宽度的 20%。</dd>
+
+        <dt>改一个数值让卡片转 20 度试试？</dt>
+        <dd>把 creativeEffect 中 <code>prev.rotate</code> 由 <code>[0, 0, -20]</code> 改成
+          <code>[0, 0, 20]</code>（或在上方滑块把 rotateZ 从 -20 调到 +20），上一张卡片就改为顺时针倾斜 20 度；
+          翻到下一张时它仍会平滑归位到 0 度。</dd>
+
+        <dt>第一轮提示词漏了什么？</dt>
+        <dd>第一轮只写了「循环、自动播放、圆点」，漏掉了 delay: 3200、disableOnInteraction: false、
+          圆点 clickable、初始 effect: 'cube'；第二轮逐条编号写清数值与布尔值后，AI 给出的配置才可直接运行。</dd>
+
+        <dt>新增的 keyboard 参数怎么用？</dt>
+        <dd>keyboard: { enabled: true } 让 Swiper 监听方向键，需先聚焦展区；关闭开关后调用
+          swiper.keyboard.disable()，键盘即失效。</dd>
+      </dl>
+    </section>
+
+    <!-- ====== 返回首页 ====== -->
+    <footer class="lwj_footer">
+      <a href="index.html" class="lwj_back-home">← 返回首页</a>
+    </footer>
+
+  </div>
+
+  <script src="cdn/swiper/swiper-bundle.min.js"></script>
+  <script>
+    /**
+     * 展品数据
+     * @desc 六件大国重器的标题、说明、年代与配图，四个演示共用同一份数据，避免重复维护
+     */
+    var LWJ_EXHIBITS = [
+      { name: '福建舰', desc: '首艘国产电磁弹射航空母舰 · 2022 年下水', year: '2022', img: 'images/exhibit-1-fujian.jpg' },
+      { name: '歼-20', desc: '第五代隐身战斗机 · 2017 年列装', year: '2017', img: 'images/exhibit-2-j20.jpg' },
+      { name: '复兴号', desc: '中国标准动车组 · 时速 350 公里商业运营', year: '2017', img: 'images/exhibit-3-fuxing.jpg' },
+      { name: '华龙一号', desc: '自主三代核电技术 · 首堆 2021 年并网', year: '2021', img: 'images/exhibit-4-hualong.jpg' },
+      { name: '北斗三号', desc: '全球卫星导航系统 · 2020 年组网完成', year: '2020', img: 'images/exhibit-5-beidou.jpg' },
+      { name: '爱达 · 魔都号', desc: '首艘国产大型邮轮 · 2024 年 1 月首航', year: '2024', img: 'images/exhibit-6-adora.jpg' }
+    ];
+
+    /**
+     * 渲染展品幻灯片
+     * @desc 把展品数据渲染成 Swiper 需要的 swiper-slide 结构，写入指定容器的 .swiper-wrapper
+     * @param {string} selector - 轮播容器的选择器
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjRenderSlides(selector) {
+      var wrapper = document.querySelector(selector + ' .swiper-wrapper');
+      wrapper.innerHTML = LWJ_EXHIBITS.map(function (item, index) {
+        var no = String(index + 1).padStart(2, '0');
+        return '<div class="swiper-slide lwj_slide">' +
+                 '<img src="' + item.img + '" alt="' + item.name + '">' +
+                 '<div class="lwj_slide-caption" data-swiper-parallax="-120">' +
+                   '<span class="lwj_slide-index">' + no + '</span>' +
+                   '<div class="lwj_slide-text">' +
+                     '<strong>' + item.name + '</strong>' +
+                     '<span>' + item.desc + '</span>' +
+                   '</div>' +
+                 '</div>' +
+               '</div>';
+      }).join('');
+    }
+
+    /* 任务二：creative 变换参数，实验台可实时修改后重建 */
+    var LWJ_CREATIVE = { prevX: -20, prevRotate: -20, prevScale: 0.86, nextX: 100, nextScale: 1.12 };
+
+    /* 任务三：自动翻页间隔，现场调节后重建实例仍沿用该值 */
+    var LWJ_DELAY = 3200;
+
+    /**
+     * 生成 creativeEffect 配置
+     * @desc 任务二与任务三两处演示共用同一组电影墙参数，保证调节滑块后两边效果一致
+     * @returns {object} creativeEffect 配置对象
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjCreativeConfig() {
+      return {
+        prev: {
+          shadow: true,
+          translate: [LWJ_CREATIVE.prevX + '%', 0, -120],
+          rotate: [0, 0, LWJ_CREATIVE.prevRotate],
+          opacity: 0.55,
+          scale: LWJ_CREATIVE.prevScale
+        },
+        next: {
+          translate: [LWJ_CREATIVE.nextX + '%', 0, 0],
+          rotate: [0, 0, 0],
+          opacity: 1,
+          scale: LWJ_CREATIVE.nextScale
+        }
+      };
+    }
+
+    /**
+     * 创建主演示轮播
+     * @desc 按指定效果创建 #wySw4 实例，统一带上 loop、3.2 秒自动翻页、可点击圆点、箭头、键盘 / 滚轮控制与视差
+     * @param {string} effect - 效果名，取值 slide / fade / cube / coverflow / flip / cards / creative
+     * @param {number} startIndex - 重新创建后要停留的展品下标
+     * @param {boolean} keyboardEnabled - 是否启用键盘方向键控制
+     * @param {boolean} mousewheelEnabled - 是否启用鼠标滚轮翻页
+     * @returns {object} 新建的 Swiper 实例
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjCreateMainSwiper(effect, startIndex, keyboardEnabled, mousewheelEnabled) {
+      return new Swiper('#wySw4', {
+        effect: effect,
+        initialSlide: startIndex,
+        loop: true,
+        speed: 650,
+        grabCursor: true,
+        keyboard: { enabled: keyboardEnabled, onlyInViewport: true },
+        mousewheel: { enabled: mousewheelEnabled },
+        /* 3D 视差：配合 slide 内的 data-swiper-parallax 使用 */
+        parallax: true,
+        /* 默认 3.2 秒自动翻页；手动操作后不停止 */
+        autoplay: { delay: LWJ_DELAY, disableOnInteraction: false },
+        /* 圆点分页器可点击 */
+        pagination: { el: '#wySw4 .swiper-pagination', clickable: true },
+        navigation: { prevEl: '#wySw4 .swiper-button-prev', nextEl: '#wySw4 .swiper-button-next' },
+        cubeEffect: { shadow: true, slideShadows: true },
+        coverflowEffect: { rotate: 32, stretch: 0, depth: 130, modifier: 1, slideShadows: false },
+        flipEffect: { slideShadows: false },
+        cardsEffect: { slideShadows: false },
+        /* 电影墙：prev 左移缩小带角度，next 右移放大待命 */
+        creativeEffect: lwjCreativeConfig(),
+        /* 翻页时清除双击放大的状态 */
+        on: {
+          slideChange: function () {
+            Array.prototype.forEach.call(document.querySelectorAll('.lwj_zoomed'), function (el) {
+              el.classList.remove('lwj_zoomed');
+            });
+          }
+        }
+      });
+    }
+
+    /**
+     * 切换任务二主演示的效果
+     * @desc Swiper 11 没有切换效果的实例方法，因此记录当前下标后销毁实例，再用新效果重建
+     * @param {string} effect - 目标效果名
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjSwitchEffect(effect) {
+      var keyboardEnabled = document.getElementById('lwjKeyboardToggle').checked;
+      var mousewheelEnabled = document.getElementById('lwjMousewheelToggle').checked;
+      var currentIndex = lwjMainSwiper ? lwjMainSwiper.realIndex : 0;
+      if (lwjMainSwiper) {
+        lwjMainSwiper.destroy(true, true);
+      }
+      lwjMainSwiper = lwjCreateMainSwiper(effect, currentIndex, keyboardEnabled, mousewheelEnabled);
+
+      Array.prototype.forEach.call(document.querySelectorAll('#lwjEffectBar .lwj_effect-btn'), function (btn) {
+        btn.classList.toggle('lwj_effect-active', btn.getAttribute('data-effect') === effect);
+      });
+    }
+
+    /**
+     * 创建任务三演示轮播
+     * @desc 支持 8 种翻页方式：课堂 6 种 effect + creative + vertical 垂直方向，并开启键盘、滚轮、视差与双击缩放
+     * @param {string} method - 方式名，vertical 时改用 direction: 'vertical' + effect: 'slide'
+     * @param {number} startIndex - 重建后要停留的展品下标
+     * @param {boolean} keyboardEnabled - 是否启用键盘方向键
+     * @param {boolean} mousewheelEnabled - 是否启用鼠标滚轮
+     * @returns {object} 新建的 Swiper 实例
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjCreateTask3Swiper(method, startIndex, keyboardEnabled, mousewheelEnabled) {
+      var isVertical = method === 'vertical';
+      document.getElementById('wySw5').classList.toggle('lwj_vertical-mode', isVertical);
+      return new Swiper('#wySw5', {
+        direction: isVertical ? 'vertical' : 'horizontal',
+        effect: isVertical ? 'slide' : method,
+        initialSlide: startIndex,
+        loop: true,
+        speed: 650,
+        grabCursor: true,
+        keyboard: { enabled: keyboardEnabled, onlyInViewport: true },
+        mousewheel: { enabled: mousewheelEnabled },
+        parallax: true,
+        autoplay: { delay: LWJ_DELAY, disableOnInteraction: false },
+        pagination: { el: '#wySw5 .swiper-pagination', clickable: true },
+        navigation: { prevEl: '#wySw5 .swiper-button-prev', nextEl: '#wySw5 .swiper-button-next' },
+        cubeEffect: { shadow: true, slideShadows: true },
+        coverflowEffect: { rotate: 32, stretch: 0, depth: 130, modifier: 1, slideShadows: false },
+        flipEffect: { slideShadows: false },
+        cardsEffect: { slideShadows: false },
+        creativeEffect: lwjCreativeConfig(),
+        on: {
+          slideChange: function () {
+            Array.prototype.forEach.call(document.querySelectorAll('.lwj_zoomed'), function (el) {
+              el.classList.remove('lwj_zoomed');
+            });
+          }
+        }
+      });
+    }
+
+    /**
+     * 切换任务三演示的翻页方式
+     * @desc 同样采用「记录 realIndex → 销毁 → 按新方式重建」的方式切换，8 个按钮同步高亮
+     * @param {string} method - 目标方式名
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjSwitchTask3Method(method) {
+      var keyboardEnabled = document.getElementById('lwjT3KeyboardToggle').checked;
+      var mousewheelEnabled = document.getElementById('lwjT3MousewheelToggle').checked;
+      var currentIndex = lwjTask3Swiper ? lwjTask3Swiper.realIndex : 0;
+      if (lwjTask3Swiper) {
+        lwjTask3Swiper.destroy(true, true);
+      }
+      lwjTask3Swiper = lwjCreateTask3Swiper(method, currentIndex, keyboardEnabled, mousewheelEnabled);
+
+      Array.prototype.forEach.call(document.querySelectorAll('#lwjTask3Bar .lwj_effect-btn'), function (btn) {
+        btn.classList.toggle('lwj_effect-active', btn.getAttribute('data-method') === method);
+      });
+    }
+
+    /**
+     * 初始化全部演示轮播
+     * @desc 先给任务一的 8 个迷你演示与任务二主演示渲染幻灯片，再按各自需求创建实例
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjInitAll() {
+      var miniIds = ['lwjR1A', 'lwjR1B', 'lwjR1C', 'lwjR1D',
+                     'lwjR2A', 'lwjR2B', 'lwjR2C', 'lwjR2D'];
+      miniIds.forEach(function (id) {
+        lwjRenderSlides('#' + id);
+      });
+      lwjRenderSlides('#wySw4');
+      lwjRenderSlides('#wySw5');
+
+      /* 第一轮：零间隔切换 / 3.2 秒自动 / 圆点可点 / 初始 cube */
+      new Swiper('#lwjR1A', {
+        loop: true,
+        speed: 0,
+        autoplay: { delay: 1200, disableOnInteraction: false }
+      });
+      new Swiper('#lwjR1B', {
+        loop: true,
+        speed: 500,
+        autoplay: { delay: 3200, disableOnInteraction: false }
+      });
+      new Swiper('#lwjR1C', {
+        loop: true,
+        speed: 500,
+        pagination: { el: '#lwjR1C .swiper-pagination', clickable: true }
+      });
+      new Swiper('#lwjR1D', {
+        loop: true,
+        speed: 500,
+        effect: 'cube',
+        cubeEffect: { shadow: true, slideShadows: true }
+      });
+
+      /* 第二轮：四项能力齐全，逐个演示 */
+      new Swiper('#lwjR2A', {
+        loop: true,
+        speed: 500,
+        autoplay: { delay: 3200, disableOnInteraction: false },
+        pagination: { el: '#lwjR2A .swiper-pagination', clickable: true }
+      });
+      new Swiper('#lwjR2B', {
+        loop: true,
+        speed: 500,
+        autoplay: { delay: 3200, disableOnInteraction: false },
+        pagination: { el: '#lwjR2B .swiper-pagination', clickable: true }
+      });
+      new Swiper('#lwjR2C', {
+        loop: true,
+        speed: 500,
+        autoplay: { delay: 3200, disableOnInteraction: false },
+        pagination: { el: '#lwjR2C .swiper-pagination', clickable: true }
+      });
+      new Swiper('#lwjR2D', {
+        loop: true,
+        speed: 500,
+        effect: 'cube',
+        cubeEffect: { shadow: true, slideShadows: true },
+        autoplay: { delay: 3200, disableOnInteraction: false },
+        pagination: { el: '#lwjR2D .swiper-pagination', clickable: true }
+      });
+
+      /* 任务二主演示：初始 cube */
+      lwjMainSwiper = lwjCreateMainSwiper('cube', 0, true, false);
+
+      /* 任务三演示：默认第 8 种 vertical 垂直翻页 */
+      lwjTask3Swiper = lwjCreateTask3Swiper('vertical', 0, true, false);
+    }
+
+    /* 主轮播实例，供效果切换与键盘开关复用 */
+    var lwjMainSwiper = null;
+
+    /* 任务三演示实例，供第 8 种方式切换与开关复用 */
+    var lwjTask3Swiper = null;
+
+    /**
+     * 绑定页面交互
+     * @desc 绑定效果按钮点击与键盘控制开关，并同步状态文案
+     * @author 李汶静
+     * @created 2026-11-09
+     */
+    function lwjBindEvents() {
+      var effectBar = document.getElementById('lwjEffectBar');
+      var keyboardToggle = document.getElementById('lwjKeyboardToggle');
+      var keyboardState = document.getElementById('lwjKeyboardState');
+
+      effectBar.addEventListener('click', function (event) {
+        var btn = event.target.closest('.lwj_effect-btn');
+        if (!btn) { return; }
+        lwjSwitchEffect(btn.getAttribute('data-effect'));
+      });
+
+      keyboardToggle.addEventListener('change', function () {
+        var enabled = keyboardToggle.checked;
+        if (lwjMainSwiper) {
+          if (enabled) {
+            lwjMainSwiper.keyboard.enable();
+          } else {
+            lwjMainSwiper.keyboard.disable();
+          }
+        }
+        keyboardState.textContent = enabled ? '已开启' : '已关闭';
+      });
+
+      /* 任务三：鼠标滚轮翻页开关 */
+      var mousewheelToggle = document.getElementById('lwjMousewheelToggle');
+      var mousewheelState = document.getElementById('lwjMousewheelState');
+      mousewheelToggle.addEventListener('change', function () {
+        var enabled = mousewheelToggle.checked;
+        if (lwjMainSwiper) {
+          if (enabled) {
+            lwjMainSwiper.mousewheel.enable();
+          } else {
+            lwjMainSwiper.mousewheel.disable();
+          }
+        }
+        mousewheelState.textContent = enabled ? '已开启' : '已关闭';
+      });
+
+      /* 任务三：双击展品放大，再双击还原 */
+      document.getElementById('wySw4').addEventListener('dblclick', function (event) {
+        var slide = event.target.closest('.lwj_slide');
+        if (!slide) { return; }
+        slide.classList.toggle('lwj_zoomed');
+      });
+
+      /* 任务三演示：8 种翻页方式按钮 */
+      document.getElementById('lwjTask3Bar').addEventListener('click', function (event) {
+        var btn = event.target.closest('.lwj_effect-btn');
+        if (!btn) { return; }
+        lwjSwitchTask3Method(btn.getAttribute('data-method'));
+      });
+
+      /* 任务三演示：键盘开关 */
+      var t3KeyboardToggle = document.getElementById('lwjT3KeyboardToggle');
+      var t3KeyboardState = document.getElementById('lwjT3KeyboardState');
+      t3KeyboardToggle.addEventListener('change', function () {
+        var enabled = t3KeyboardToggle.checked;
+        if (lwjTask3Swiper) {
+          if (enabled) {
+            lwjTask3Swiper.keyboard.enable();
+          } else {
+            lwjTask3Swiper.keyboard.disable();
+          }
+        }
+        t3KeyboardState.textContent = enabled ? '已开启' : '已关闭';
+      });
+
+      /* 任务三演示：鼠标滚轮开关 */
+      var t3MousewheelToggle = document.getElementById('lwjT3MousewheelToggle');
+      var t3MousewheelState = document.getElementById('lwjT3MousewheelState');
+      t3MousewheelToggle.addEventListener('change', function () {
+        var enabled = t3MousewheelToggle.checked;
+        if (lwjTask3Swiper) {
+          if (enabled) {
+            lwjTask3Swiper.mousewheel.enable();
+          } else {
+            lwjTask3Swiper.mousewheel.disable();
+          }
+        }
+        t3MousewheelState.textContent = enabled ? '已开启' : '已关闭';
+      });
+
+      /* 任务三演示：双击展品放大 / 还原 */
+      document.getElementById('wySw5').addEventListener('dblclick', function (event) {
+        var slide = event.target.closest('.lwj_slide');
+        if (!slide) { return; }
+        slide.classList.toggle('lwj_zoomed');
+      });
+
+      /* 任务二：参数实验台的滑块与输出同步 */
+      var labSliders = [
+        { id: 'lwjPrevX', out: 'lwjOutPrevX', key: 'prevX', suffix: '%' },
+        { id: 'lwjPrevRotate', out: 'lwjOutPrevRotate', key: 'prevRotate', suffix: '°' },
+        { id: 'lwjPrevScale', out: 'lwjOutPrevScale', key: 'prevScale', suffix: '' },
+        { id: 'lwjNextX', out: 'lwjOutNextX', key: 'nextX', suffix: '%' },
+        { id: 'lwjNextScale', out: 'lwjOutNextScale', key: 'nextScale', suffix: '' }
+      ];
+      labSliders.forEach(function (item) {
+        var input = document.getElementById(item.id);
+        var output = document.getElementById(item.out);
+        input.addEventListener('input', function () {
+          var isScale = item.key === 'prevScale' || item.key === 'nextScale';
+          output.textContent = isScale ? Number(input.value).toFixed(2) : input.value + item.suffix;
+        });
+      });
+
+      /* 任务二：把滑块数值写回参数并重建 creative 实例 */
+      document.getElementById('lwjApplyCreative').addEventListener('click', function () {
+        LWJ_CREATIVE.prevX = Number(document.getElementById('lwjPrevX').value);
+        LWJ_CREATIVE.prevRotate = Number(document.getElementById('lwjPrevRotate').value);
+        LWJ_CREATIVE.prevScale = Number(document.getElementById('lwjPrevScale').value);
+        LWJ_CREATIVE.nextX = Number(document.getElementById('lwjNextX').value);
+        LWJ_CREATIVE.nextScale = Number(document.getElementById('lwjNextScale').value);
+        lwjSwitchEffect('creative');
+      });
+
+      /* 任务三：现场修改 autoplay.delay，立即重启自动播放并说明预期变化 */
+      var delayInput = document.getElementById('lwjDelayInput');
+      var delayResult = document.getElementById('lwjDelayResult');
+      document.getElementById('lwjDelayApply').addEventListener('click', function () {
+        var value = Number(delayInput.value);
+        if (!value || value < 500) { value = 500; }
+        if (value > 20000) { value = 20000; }
+        delayInput.value = value;
+        LWJ_DELAY = value;
+        if (lwjMainSwiper) {
+          lwjMainSwiper.params.autoplay.delay = value;
+          lwjMainSwiper.autoplay.stop();
+          lwjMainSwiper.autoplay.start();
+        }
+        if (lwjTask3Swiper) {
+          lwjTask3Swiper.params.autoplay.delay = value;
+          lwjTask3Swiper.autoplay.stop();
+          lwjTask3Swiper.autoplay.start();
+        }
+        delayResult.textContent = '已改为 ' + value + ' 毫秒 ≈ ' + (value / 1000).toFixed(1) + ' 秒自动翻一页。';
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      lwjInitAll();
+      lwjBindEvents();
+    });
+  </script>
+</body>
+</html>
