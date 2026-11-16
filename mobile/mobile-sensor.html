@@ -1,0 +1,526 @@
+﻿<!--
+  作者：李汶静
+  创建时间：2026-11-16 14:50
+  使用模型：DeepSeek-V4.1-Flash
+  功能：移动端任务四「摇一摇彩蛋」，监听 devicemotion 合成加速度触发随机菜谱，含 1.5s 冷却、iOS 权限申请与设备不支持时的降级按钮。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务四 · 摇一摇彩蛋 | 移动端触摸交互</title>
+  <link rel="stylesheet" href="../cdn/fonts/fonts.css">
+  <style>
+    :root {
+      --lwj_bg: #0a0810;
+      --lwj_panel: #141020;
+      --lwj_line: rgba(255, 255, 255, 0.09);
+      --lwj_text: #edeaf5;
+      --lwj_muted: #948da9;
+      --lwj_lime: #c8f24d;
+      --lwj_violet: #8b6cff;
+      --lwj_amber: #ffc46b;
+      --lwj_red: #ff6b5e;
+      --lwj_mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(900px 500px at 50% -8%, rgba(255, 196, 107, 0.14), transparent 70%),
+        radial-gradient(600px 380px at 10% 60%, rgba(139, 108, 255, 0.12), transparent 70%),
+        var(--lwj_bg);
+      color: var(--lwj_text);
+      line-height: 1.7;
+      padding-bottom: 48px;
+    }
+    .lwj_wrap { max-width: 560px; margin: 0 auto; padding: 0 18px; }
+
+    /* 返回条 */
+    .lwj_topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 0 4px; font-size: 12.5px; color: var(--lwj_muted);
+    }
+    .lwj_topbar a {
+      color: var(--lwj_muted); text-decoration: none; border: 1px solid var(--lwj_line);
+      border-radius: 999px; padding: 5px 12px; transition: color 0.2s, border-color 0.2s;
+    }
+    .lwj_topbar a:hover { color: var(--lwj_lime); border-color: rgba(200, 242, 77, 0.5); }
+
+    /* 页头 */
+    .lwj_hero { padding: 18px 0 10px; text-align: center; }
+    .lwj_hero h1 {
+      font-size: clamp(24px, 7vw, 32px); letter-spacing: 0.06em;
+      background: linear-gradient(100deg, #fff, #ffe0b0 55%, var(--lwj_lime));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .lwj_hero p { font-size: 13.5px; color: #c9c3d9; margin-top: 8px; }
+    .lwj_hero code {
+      font-family: var(--lwj_mono); font-size: 11.5px;
+      background: rgba(139, 108, 255, 0.16); border: 1px solid rgba(139, 108, 255, 0.3);
+      border-radius: 5px; padding: 1px 5px; color: #d9d0ff;
+    }
+
+    /* 状态条 */
+    .lwj_status {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin: 8px 0 14px; padding: 8px 14px;
+      border: 1px solid var(--lwj_line); border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 12px; color: var(--lwj_muted);
+    }
+    .lwj_status-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--lwj_amber); margin-right: 7px;
+      box-shadow: 0 0 0 3px rgba(255, 196, 107, 0.16);
+    }
+    .lwj_status.is-ok .lwj_status-dot { background: var(--lwj_lime); box-shadow: 0 0 0 3px rgba(200, 242, 77, 0.18); }
+    .lwj_status.is-bad .lwj_status-dot { background: var(--lwj_red); box-shadow: 0 0 0 3px rgba(255, 107, 94, 0.18); }
+    .lwj_status b { color: #fff; font-family: var(--lwj_mono); font-weight: 500; }
+
+    /* 菜谱结果卡 */
+    .lwj_result {
+      position: relative; min-height: 260px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 6px; padding: 24px 20px;
+      border-radius: 22px; overflow: hidden;
+      background:
+        radial-gradient(300px 180px at 50% 10%, rgba(255, 196, 107, 0.16), transparent 70%),
+        linear-gradient(160deg, #1d1630, #100b1c);
+      border: 1px solid rgba(255, 196, 107, 0.28);
+      box-shadow: 0 22px 44px rgba(0, 0, 0, 0.4);
+    }
+    .lwj_result-emoji {
+      font-size: 70px; line-height: 1;
+      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.45));
+      transition: transform 0.2s;
+    }
+    .lwj_result.is-shaking .lwj_result-emoji { animation: lwj_shake 0.45s ease-in-out; }
+    .lwj_result.is-pop .lwj_result-emoji { animation: lwj_pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1); }
+    .lwj_result-name {
+      font-size: 24px; letter-spacing: 0.08em; color: #fff; margin-top: 6px;
+    }
+    .lwj_result-desc { font-size: 13px; color: #b6aecb; max-width: 320px; }
+    .lwj_result-hint {
+      font-size: 12px; color: var(--lwj_muted); margin-top: 8px;
+      font-family: var(--lwj_mono); letter-spacing: 0.06em;
+    }
+    .lwj_result-tag {
+      font-size: 10.5px; color: var(--lwj_amber); letter-spacing: 0.18em;
+      border: 1px solid rgba(255, 196, 107, 0.4); border-radius: 999px;
+      padding: 1px 10px; margin-bottom: 4px;
+    }
+
+    @keyframes lwj_shake {
+      0%, 100% { transform: rotate(0deg) translateX(0); }
+      20% { transform: rotate(-12deg) translateX(-6px); }
+      40% { transform: rotate(10deg) translateX(6px); }
+      60% { transform: rotate(-8deg) translateX(-4px); }
+      80% { transform: rotate(6deg) translateX(4px); }
+    }
+    @keyframes lwj_pop {
+      0% { transform: scale(0.4); opacity: 0; }
+      70% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* 按钮 */
+    .lwj_actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .lwj_btn {
+      font-family: inherit; font-size: 14px; color: #151022;
+      background: linear-gradient(100deg, var(--lwj_lime), #a8e03a);
+      border: 0; border-radius: 999px; padding: 12px 20px; cursor: pointer;
+      font-weight: 600; letter-spacing: 0.06em;
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+      touch-action: manipulation;
+      box-shadow: 0 10px 24px rgba(200, 242, 77, 0.18);
+    }
+    .lwj_btn:active { transform: scale(0.97); }
+    .lwj_btn[disabled] { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+    .lwj_btn--ghost {
+      background: transparent; color: var(--lwj_text);
+      border: 1px solid var(--lwj_line); font-weight: 400; font-size: 13px;
+      box-shadow: none;
+    }
+    .lwj_btn--ghost:hover { border-color: rgba(200, 242, 77, 0.5); color: var(--lwj_lime); }
+
+    /* 数据面板 */
+    .lwj_meter {
+      margin-top: 16px; padding: 12px 14px;
+      border: 1px solid var(--lwj_line); border-radius: 12px;
+      background: rgba(255, 255, 255, 0.025);
+      font-family: var(--lwj_mono); font-size: 11.5px; color: var(--lwj_muted);
+    }
+    .lwj_meter-row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+    .lwj_meter-row b { color: #fff; font-weight: 500; }
+    .lwj_meter-bar {
+      height: 4px; margin-top: 8px; border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08); overflow: hidden;
+    }
+    .lwj_meter-fill {
+      height: 100%; width: 0%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--lwj_lime), var(--lwj_red));
+      transition: width 0.12s linear;
+    }
+
+    /* 演示视频入口 */
+    .lwj_video { margin-top: 22px; }
+    .lwj_video-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .lwj_video-head h2 { font-size: 15px; color: #fff; letter-spacing: 0.04em; }
+    .lwj_video-head a {
+      font-size: 11.5px; color: var(--lwj_lime); text-decoration: none;
+      border-bottom: 1px dashed rgba(200, 242, 77, 0.5);
+    }
+    .lwj_video-box {
+      position: relative; aspect-ratio: 16 / 9;
+      border-radius: 14px; overflow: hidden;
+      border: 1px solid var(--lwj_line); background: #08060e;
+    }
+    .lwj_video-player {
+      display: none; width: 100%; height: 100%;
+      object-fit: contain; background: #000;
+    }
+    .lwj_video-player.is-ready { display: block; }
+    .lwj_video-empty {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 16px; text-align: center;
+      background:
+        radial-gradient(240px 140px at 50% 40%, rgba(255, 196, 107, 0.14), transparent 72%),
+        #08060e;
+      color: #8c84a6; font-size: 12.5px;
+      transition: opacity 0.25s;
+    }
+    .lwj_video-empty.is-hidden { opacity: 0; pointer-events: none; }
+    .lwj_video-icon { font-size: 26px; color: var(--lwj_amber); line-height: 1; }
+    .lwj_video-empty code {
+      font-family: var(--lwj_mono); font-size: 11px; color: #ffe0b0;
+      background: rgba(255, 196, 107, 0.12); border: 1px solid rgba(255, 196, 107, 0.32);
+      border-radius: 5px; padding: 1px 6px; word-break: break-all;
+    }
+    .lwj_video-note { margin-top: 8px; font-size: 11.5px; color: #7f7895; line-height: 1.8; }
+    .lwj_video-note code { font-family: var(--lwj_mono); font-size: 11px; color: #d9d0ff; }
+
+    /* 说明 */
+    .lwj_notes {
+      margin-top: 22px; padding: 16px;
+      border: 1px solid var(--lwj_line); border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+    .lwj_notes h2 { font-size: 14px; margin-bottom: 8px; color: #fff; }
+    .lwj_notes p { font-size: 12.5px; color: #a9a2bf; margin-bottom: 8px; }
+    .lwj_notes ul { list-style: none; display: grid; gap: 6px; }
+    .lwj_notes li { font-size: 12.5px; color: #a9a2bf; padding-left: 18px; position: relative; }
+    .lwj_notes li::before { content: "▸"; position: absolute; left: 0; color: var(--lwj_lime); }
+    .lwj_notes code { font-family: var(--lwj_mono); font-size: 11.5px; color: #d9d0ff; }
+
+    /* 页脚 */
+    .lwj_footer {
+      margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--lwj_line);
+      text-align: center; font-size: 12px; color: #6f6885;
+    }
+    .lwj_footer a { color: var(--lwj_lime); text-decoration: none; }
+    .lwj_footer p + p { margin-top: 6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lwj_wrap">
+    <div class="lwj_topbar">
+      <span>任务四 · 设备传感器</span>
+      <a href="index.html">← 返回课程</a>
+    </div>
+
+    <header class="lwj_hero">
+      <h1>摇一摇 · 今日菜谱</h1>
+      <p>摇动手机抽取一道今日推荐，阈值 <code>18</code>，冷却 <code>1.5s</code></p>
+    </header>
+
+    <div class="lwj_status" id="lwj_status">
+      <span><span class="lwj_status-dot"></span><span id="lwj_status_text">正在检测设备传感器…</span></span>
+      <span>合成加速度 <b id="lwj_mag">—</b></span>
+    </div>
+
+    <div class="lwj_result" id="lwj_result">
+      <span class="lwj_result-tag">TODAY'S PICK</span>
+      <span class="lwj_result-emoji" id="lwj_emoji">📱</span>
+      <span class="lwj_result-name" id="lwj_name">摇一摇手机</span>
+      <span class="lwj_result-desc" id="lwj_desc">摇动设备即可抽取今日菜谱；桌面端可先用下方按钮体验。</span>
+      <span class="lwj_result-hint" id="lwj_result_hint">等待摇动…</span>
+    </div>
+
+    <div class="lwj_actions">
+      <button class="lwj_btn lwj_btn--ghost" type="button" id="lwj_permission" hidden>开启运动传感器权限（iOS 必需）</button>
+      <button class="lwj_btn" type="button" id="lwj_fallback">点我抽一次（降级方案）</button>
+    </div>
+
+    <div class="lwj_meter">
+      <div class="lwj_meter-row"><span>|a| 合成加速度</span><b id="lwj_meter_mag">— m/s²</b></div>
+      <div class="lwj_meter-row"><span>|a| − 9.8 偏离值</span><b id="lwj_meter_dev">—</b></div>
+      <div class="lwj_meter-row"><span>触发阈值 / 冷却</span><b>18 / 1500ms</b></div>
+      <div class="lwj_meter-bar"><div class="lwj_meter-fill" id="lwj_meter_fill"></div></div>
+    </div>
+
+    <!-- 操作演示视频入口：把视频放进 mobile/videos 后自动出现播放器 -->
+    <section class="lwj_video">
+      <div class="lwj_video-head">
+        <h2>操作演示视频</h2>
+        <a href="https://github.com/lwj30/liwenjing/tree/main/mobile/videos" target="_blank" rel="noopener">GitHub 视频目录 ↗</a>
+      </div>
+      <div class="lwj_video-box">
+        <video class="lwj_video-player" id="lwj_video" controls playsinline preload="metadata" src="videos/lwj_sensor_demo.mp4"></video>
+        <div class="lwj_video-empty" id="lwj_video_empty">
+          <span class="lwj_video-icon">▶</span>
+          <span>视频还没放进来</span>
+          <code>mobile/videos/lwj_sensor_demo.mp4</code>
+        </div>
+      </div>
+      <p class="lwj_video-note">
+        把视频按上面的文件名放进 <code>mobile/videos/</code>，刷新本页即可播放；上传 GitHub 后同一路径的视频可直接在仓库中打开，
+        开启 GitHub Pages 后也能通过本页播放。单文件建议不超过 25MB，超过会推不上去。
+      </p>
+    </section>
+
+    <section class="lwj_notes">
+      <h2>为什么必须做降级</h2>
+      <p>不是所有设备都有加速度传感器：桌面浏览器、部分平板、被系统限制权限的浏览器都拿不到 <code>devicemotion</code> 数据。若不写降级分支，页面就是一片空白，用户会以为“坏了”。</p>
+      <ul>
+        <li>先判断 <code>'DeviceMotionEvent' in window</code>，没有就显示“当前设备不支持”</li>
+        <li>监听后 3 秒仍收不到数据，也判定为不可用，避免页面一直等</li>
+        <li>iOS 13+ 必须在用户点击后调用 <code>DeviceMotionEvent.requestPermission()</code></li>
+        <li><code>accelerationIncludingGravity</code> 含重力（静止时约 9.8），<code>acceleration</code> 已去除重力，前者兼容性更好</li>
+        <li>阈值 + 冷却双保险：否则一次甩动会连续触发十几次</li>
+      </ul>
+    </section>
+
+    <footer class="lwj_footer">
+      <p>李汶静 · 学号 20260101 · 高级网页设计移动端作业</p>
+      <p><a href="index.html">← 返回课程页</a> · <a href="../index.html">返回作品集首页 →</a></p>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * 任务四：摇一摇彩蛋
+     * @desc 监听 devicemotion 计算合成加速度，超过阈值并处于冷却期外时随机抽取菜谱；无传感器时提供按钮降级
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    (function () {
+      'use strict';
+
+      var LWJ_THRESHOLD = 18;      // 偏离重力的加速度阈值
+      var LWJ_COOLDOWN = 1500;     // 冷却时间，防止一次摇动重复触发
+      var LWJ_DATA_TIMEOUT = 3000; // 多久收不到数据就判定不可用
+
+      var lwj_dishes = [
+        { emoji: '🍲', name: '番茄牛腩煲', desc: '番茄熬到起沙，牛腩炖得酥烂，汤汁拌饭能多吃一碗。' },
+        { emoji: '🍜', name: '葱油拌面', desc: '小葱慢火熬出葱油，浇在刚出锅的面上，香气直冲鼻尖。' },
+        { emoji: '🥟', name: '荠菜鲜肉馄饨', desc: '荠菜清香配三分肥七分瘦，皮薄馅大，汤里撒一把虾皮。' },
+        { emoji: '🍚', name: '腊味煲仔饭', desc: '砂锅底一层金黄锅巴，腊肠油脂渗进米粒，淋豉油再焖两分钟。' },
+        { emoji: '🐟', name: '酸菜鱼', desc: '鱼片滑嫩，酸菜爽脆，最后泼一勺热油激出花椒香。' },
+        { emoji: '🥘', name: '干锅花菜', desc: '花菜煸到边缘焦香，配五花肉片与干辣椒，越嚼越香。' },
+        { emoji: '🍤', name: '油焖大虾', desc: '虾壳煎出红油，糖与生抽收成亮汁，连壳都想嚼掉。' },
+        { emoji: '🥬', name: '上汤娃娃菜', desc: '皮蛋咸蛋与高汤同煮，娃娃菜吸饱汤汁，清甜解腻。' }
+      ];
+
+      var lwj_result = document.getElementById('lwj_result');
+      var lwj_emoji = document.getElementById('lwj_emoji');
+      var lwj_name = document.getElementById('lwj_name');
+      var lwj_desc = document.getElementById('lwj_desc');
+      var lwj_resultHint = document.getElementById('lwj_result_hint');
+      var lwj_status = document.getElementById('lwj_status');
+      var lwj_statusText = document.getElementById('lwj_status_text');
+      var lwj_magText = document.getElementById('lwj_mag');
+      var lwj_meterMag = document.getElementById('lwj_meter_mag');
+      var lwj_meterDev = document.getElementById('lwj_meter_dev');
+      var lwj_meterFill = document.getElementById('lwj_meter_fill');
+      var lwj_permission = document.getElementById('lwj_permission');
+      var lwj_fallback = document.getElementById('lwj_fallback');
+
+      var lwj_lastPick = -1;
+      var lwj_lastShake = 0;
+      var lwj_gotData = false;
+      var lwj_dataTimer = null;
+
+      /**
+       * 更新状态条
+       * @desc 用颜色区分“正常 / 等待 / 不可用”，让用户一眼知道当前传感器状态
+       * @param {string} lwj_text - 状态文案
+       * @param {string} lwj_kind - ok / waiting / bad
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_setStatus(lwj_text, lwj_kind) {
+        lwj_statusText.textContent = lwj_text;
+        lwj_status.classList.remove('is-ok', 'is-bad');
+        if (lwj_kind === 'ok') { lwj_status.classList.add('is-ok'); }
+        if (lwj_kind === 'bad') { lwj_status.classList.add('is-bad'); }
+      }
+
+      /**
+       * 随机抽取一道菜
+       * @desc 避免与上一次结果重复，连续抽到同一道菜时重抽一次
+       * @returns {Object} 菜品对象
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_pickDish() {
+        var lwj_index = Math.floor(Math.random() * lwj_dishes.length);
+        if (lwj_index === lwj_lastPick && lwj_dishes.length > 1) {
+          lwj_index = (lwj_index + 1) % lwj_dishes.length;
+        }
+        lwj_lastPick = lwj_index;
+        return lwj_dishes[lwj_index];
+      }
+
+      /**
+       * 触发一次抽取
+       * @desc 写入菜谱内容、播放弹出动画，并刷新提示文案
+       * @param {string} lwj_source - 触发来源：shake / button
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_spin(lwj_source) {
+        var lwj_dish = lwj_pickDish();
+        lwj_emoji.textContent = lwj_dish.emoji;
+        lwj_name.textContent = lwj_dish.name;
+        lwj_desc.textContent = lwj_dish.desc;
+        lwj_resultHint.textContent = lwj_source === 'shake' ? '摇一摇命中 · 今日就吃它' : '降级按钮抽取 · 今日就吃它';
+
+        lwj_result.classList.remove('is-pop', 'is-shaking');
+        // 强制回流，保证连续两次播放动画都能重新触发
+        void lwj_result.offsetWidth;
+        lwj_result.classList.add('is-pop');
+
+        lwj_lastShake = Date.now();
+        lwj_fallback.disabled = true;
+        setTimeout(function () {
+          lwj_fallback.disabled = false;
+        }, LWJ_COOLDOWN);
+      }
+
+      /**
+       * 处理 devicemotion 数据
+       * @desc 用 accelerationIncludingGravity 计算合成加速度，偏离 9.8 超过阈值且冷却结束才触发
+       * @param {DeviceMotionEvent} lwj_event - 设备运动事件
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_onMotion(lwj_event) {
+        var lwj_acc = lwj_event.accelerationIncludingGravity;
+        if (!lwj_acc || lwj_acc.x === null) { return; }
+
+        var lwj_mag = Math.hypot(lwj_acc.x || 0, lwj_acc.y || 0, lwj_acc.z || 0);
+        var lwj_dev = Math.abs(lwj_mag - 9.81);
+
+        lwj_magText.textContent = lwj_mag.toFixed(1);
+        lwj_meterMag.textContent = lwj_mag.toFixed(2) + ' m/s²';
+        lwj_meterDev.textContent = lwj_dev.toFixed(2);
+        lwj_meterFill.style.width = Math.min(100, (lwj_dev / LWJ_THRESHOLD) * 100) + '%';
+
+        if (!lwj_gotData) {
+          lwj_gotData = true;
+          clearTimeout(lwj_dataTimer);
+          lwj_setStatus('传感器可用，摇一摇试试', 'ok');
+        }
+
+        if (lwj_dev > LWJ_THRESHOLD && Date.now() - lwj_lastShake > LWJ_COOLDOWN) {
+          lwj_spin('shake');
+        }
+      }
+
+      /**
+       * 启用传感器监听
+       * @desc 先检测事件是否存在；3 秒内收不到数据则切换到“不支持”状态并保留降级按钮
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_bindSensor() {
+        if (!('DeviceMotionEvent' in window)) {
+          lwj_setStatus('当前设备不支持运动传感器', 'bad');
+          lwj_resultHint.textContent = '设备不支持 · 请使用下方按钮';
+          return;
+        }
+
+        window.addEventListener('devicemotion', lwj_onMotion, { passive: true });
+        lwj_setStatus('等待传感器数据…', 'waiting');
+        lwj_dataTimer = setTimeout(function () {
+          if (lwj_gotData) { return; }
+          lwj_setStatus('未收到传感器数据，请用手机打开', 'bad');
+          lwj_resultHint.textContent = '收不到数据 · 请使用下方按钮';
+        }, LWJ_DATA_TIMEOUT);
+      }
+
+      // iOS 13+ 需要用户手势触发权限申请
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        lwj_permission.hidden = false;
+        lwj_setStatus('iOS 需先授权运动传感器', 'waiting');
+
+        lwj_permission.addEventListener('click', function () {
+          DeviceMotionEvent.requestPermission().then(function (lwj_state) {
+            if (lwj_state === 'granted') {
+              lwj_permission.hidden = true;
+              lwj_bindSensor();
+            } else {
+              lwj_setStatus('权限被拒绝，可使用下方按钮', 'bad');
+            }
+          }).catch(function () {
+            lwj_setStatus('权限申请失败，可使用下方按钮', 'bad');
+          });
+        });
+      } else {
+        lwj_bindSensor();
+      }
+
+      lwj_fallback.addEventListener('click', function () {
+        lwj_result.classList.remove('is-pop');
+        void lwj_result.offsetWidth;
+        lwj_result.classList.add('is-shaking');
+        // 先播 0.45s 摇晃，再出结果，模拟“摇”的过程
+        setTimeout(function () {
+          lwj_result.classList.remove('is-shaking');
+          lwj_spin('button');
+        }, 450);
+      });
+
+      /**
+       * 初始化演示视频入口
+       * @desc 只有视频文件读取到元数据后才显示播放器；找不到文件时保留放置说明，便于后续插入视频
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_initVideo() {
+        var lwj_video = document.getElementById('lwj_video');
+        var lwj_videoEmpty = document.getElementById('lwj_video_empty');
+        if (!lwj_video || !lwj_videoEmpty) { return; }
+
+        lwj_video.addEventListener('loadedmetadata', function () {
+          lwj_video.classList.add('is-ready');
+          lwj_videoEmpty.classList.add('is-hidden');
+        });
+        lwj_video.addEventListener('error', function () {
+          lwj_video.classList.remove('is-ready');
+          lwj_videoEmpty.classList.remove('is-hidden');
+        });
+        lwj_video.load();
+      }
+
+      lwj_initVideo();
+    })();
+  </script>
+</body>
+</html>

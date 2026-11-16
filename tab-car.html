@@ -1,0 +1,228 @@
+<!--
+  作者：李汶静
+  创建时间：2026-11-02 14:40:00
+  使用模型：Trae-Proprietary
+  功能：汽车导购 Tab 选项卡演示页，包含导购、3-9万、9-17万、17-42万、SUV 五个分类；导购为默认选中项。
+        Tab 切换逻辑由外部 lwj_js/tabs.js 提供，可复用。样式严格按参考图一比一还原。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>汽车导购 · Tab 选项卡</title>
+  <style>
+    /* ====== 基础重置 ====== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background: #f4f4f4;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    /* ====== 页面外层容器（带细边框） ====== */
+    .lwj_car-container {
+      max-width: 620px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #d9d9d9;              /* 整个容器一圈细灰线 */
+    }
+
+    /* ====== Tab 选项卡栏 ====== */
+    .lwj-tab-bar {
+      display: flex;
+      border-bottom: 1px solid #d9d9d9;       /* 底部共享横线 */
+      background: #ffffff;
+    }
+    .lwj-tab-item {
+      flex: 1;
+      padding: 12px 6px;
+      text-align: center;
+      font-size: 14px;
+      color: #888;                            /* 非激活：浅灰色 */
+      cursor: pointer;
+      border-left: 1px solid #e8e8e8;         /* 之间的竖向分隔线 */
+      border-top: 2px solid transparent;       /* 占位：激活态用左侧红色竖线 */
+      font-weight: normal;
+      user-select: none;
+    }
+    .lwj-tab-item:first-child { border-left: none; }
+
+    /* ====== 激活态：左侧红色竖线（严格还原参考图） ====== */
+    .lwj-tab-item.lwj-tab-active {
+      color: #1a1a1a;                         /* 激活：深黑色粗体 */
+      font-weight: 700;
+      border-left: 3px solid #d93025;          /* ★ 左侧红色竖线 —— 参考图核心 */
+      background: #fff;
+    }
+    .lwj-tab-item.lwj-tab-active:first-child { border-left: 3px solid #d93025; }
+
+    /* ====== 面板内容区 ====== */
+    .lwj-tab-content { padding: 16px 20px 22px; }
+
+    .lwj-tab-panel { display: none; }
+    .lwj-tab-panel.lwj-panel-active { display: block; }
+
+    /* ====== 首行：大字号红色粗体，无圆点无日期 ====== */
+    .lwj_first-item {
+      font-size: 17px;
+      font-weight: 700;
+      color: #d93025;
+      padding: 6px 0 14px;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .lwj_first-item:hover { text-decoration: underline; }
+
+    /* ====== 后续列表：圆点 + 标题 + 灰色日期 ====== */
+    .lwj_news-list { list-style: none; }
+    .lwj_news-list li {
+      padding: 6px 0;
+      font-size: 13px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      line-height: 1.6;
+    }
+
+    /* 前导圆点 "·" */
+    .lwj_news-list li::before {
+      content: "·";
+      color: #444;
+      font-size: 16px;
+      flex-shrink: 0;
+      width: 10px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .lwj_news-list li a {
+      flex: 1;
+      color: #333;
+      text-decoration: none;
+    }
+    .lwj_news-list li a:hover { color: #d93025; }
+
+    .lwj_news-date {
+      color: #aaa;                             /* 灰色日期 */
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-left: 6px;
+    }
+
+    /* ====== 返回首页 ====== */
+    .lwj_back-home {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      font-size: 13px;
+      color: #666;
+      text-decoration: none;
+      border-top: 1px solid #eee;
+      background: #fafafa;
+    }
+    .lwj_back-home:hover { color: #d93025; }
+  </style>
+</head>
+<body>
+
+  <div class="lwj_car-container" data-lwj-root>
+
+    <!-- ====== Tab 选项卡栏 ====== -->
+    <div class="lwj-tab-bar">
+      <div class="lwj-tab-item lwj-tab-active" data-lwj-tab="guide">导购</div>
+      <div class="lwj-tab-item" data-lwj-tab="price-low">3-9万</div>
+      <div class="lwj-tab-item" data-lwj-tab="price-mid">9-17万</div>
+      <div class="lwj-tab-item" data-lwj-tab="price-high">17-42万</div>
+      <div class="lwj-tab-item" data-lwj-tab="suv">SUV</div>
+    </div>
+
+    <!-- ====== 面板内容 ====== -->
+    <div class="lwj-tab-content">
+
+      <!-- 导购（默认） -->
+      <div class="lwj-tab-panel lwj-panel-active" data-lwj-panel="guide">
+        <div class="lwj_first-item">改变品牌的未来 认识豪华品牌最便宜车型</div>
+        <ul class="lwj_news-list">
+          <li><a href="#">推荐：X1等城市四驱style+经济省油的SUV</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">全景天窗/保养便利 30万办齐四驱SUV推荐</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">最高降20万！奥迪Q5等年底特惠SUV盘点</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">比拼硬实力 8款低配四驱紧凑SUV性能点评</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">花钱也能养SUV 翼博等入门SUV使用手册</a><span class="lwj_news-date">12/16</span></li>
+          <li><a href="#">最高优惠4.3万 十款15万SUV年末购买推荐</a><span class="lwj_news-date">12/16</span></li>
+        </ul>
+      </div>
+
+      <!-- 3-9万 -->
+      <div class="lwj-tab-panel" data-lwj-panel="price-low">
+        <div class="lwj_first-item">最低仅4.6万元起 超低价SUV购买价值点评</div>
+        <ul class="lwj_news-list">
+          <li><a href="#">全民摇号时代：六款低价占号必备家车型推荐</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">凌派/观致等 2019全新热门家用车点评</a><span class="lwj_news-date">12/12</span></li>
+          <li><a href="#">坚持高配路线！静态评测华泰路盛E70</a><span class="lwj_news-date">12/09</span></li>
+          <li><a href="#">买车先看销量 10月份销量前十轿车盘点</a><span class="lwj_news-date">11/29</span></li>
+          <li><a href="#">秒派正当过时 车展后台清仓考虑老款车型</a><span class="lwj_news-date">11/28</span></li>
+          <li><a href="#">土家气质 细数车展那些低价车上的"神器"</a><span class="lwj_news-date">11/27</span></li>
+        </ul>
+      </div>
+
+      <!-- 9-17万 -->
+      <div class="lwj-tab-panel" data-lwj-panel="price-mid">
+        <div class="lwj_first-item">15万级降价谁更值 预算/油耗/空间较量</div>
+        <ul class="lwj_news-list">
+          <li><a href="#">爸爸去哪？亲子出游适合车型和注意事项</a><span class="lwj_news-date">12/20</span></li>
+          <li><a href="#">推荐：X1等城市四驱style+经济省油的SUV</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">最高降20万！奥迪Q5等年底特惠SUV盘点</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">配置气质仍得肯定！传祺GA3碰撞试验图解</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">高尔夫7≠两厢版速腾 配置/动力差异解读</a><span class="lwj_news-date">12/17</span></li>
+          <li><a href="#">花钱也能养SUV 翼博等入门SUV使用手册</a><span class="lwj_news-date">12/16</span></li>
+          <li><a href="#">最高优惠4.3万 十款15万SUV年末买推荐</a><span class="lwj_news-date">12/16</span></li>
+        </ul>
+      </div>
+
+      <!-- 17-42万 -->
+      <div class="lwj-tab-panel" data-lwj-panel="price-high">
+        <div class="lwj_first-item">改变品牌的未来 认识豪华品牌最便宜车型</div>
+        <ul class="lwj_news-list">
+          <li><a href="#">爸爸去哪？亲子出游适合车型和注意事项</a><span class="lwj_news-date">12/20</span></li>
+          <li><a href="#">推荐：X1等城市四驱style+经济省油的SUV</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">全景天窗/保养便利 30万办齐四驱SUV推荐</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">最高降20万！奥迪Q5等年底特惠SUV盘点</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">比拼硬实力 8款低配四驱紧凑SUV性能点评</a><span class="lwj_news-date">12/18</span></li>
+          <li><a href="#">新迪欧/XTS等！盘点2013中级车大变革</a><span class="lwj_news-date">12/17</span></li>
+        </ul>
+      </div>
+
+      <!-- SUV -->
+      <div class="lwj-tab-panel" data-lwj-panel="suv">
+        <div class="lwj_first-item">B级品质满足A级需求 路盛E70亮点详析</div>
+        <ul class="lwj_news-list">
+          <li><a href="#">购车必看 凯迪拉克XTS领先型28T深度体验</a><span class="lwj_news-date">12/20</span></li>
+          <li><a href="#">爸爸去哪？亲子出游适合车型和注意事项</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">推荐：X1等城市四驱style+经济省油的SUV</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">全景天窗/保养便利 30万办齐四驱SUV推荐</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">全民摇号时代：六款低价占号必备车型推荐</a><span class="lwj_news-date">12/19</span></li>
+          <li><a href="#">最高降20万！奥迪Q5等年底特惠SUV盘点</a><span class="lwj_news-date">12/18</span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- 返回首页 -->
+    <a href="index.html" class="lwj_back-home">← 返回首页</a>
+  </div>
+
+  <!-- ====== 外部可复用 Tab 模块 ====== -->
+  <script src="lwj_js/tabs.js"></script>
+  <script>
+    /**
+     * [页面初始化]
+     * @desc DOMContentLoaded 后为容器注册 Tab 切换逻辑，导购面板因 HTML 中已预置
+     *       lwj-tab-active / lwj-panel-active 类名，天然作为默认选项显示。
+     */
+    document.addEventListener('DOMContentLoaded', function () {
+      LwjTabs.init(document.querySelector('[data-lwj-root]'));
+    });
+  </script>
+</body>
+</html>
