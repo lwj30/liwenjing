@@ -16,8 +16,7 @@
 
   async function lwj_loadDefaults() {
     try {
-      const lwj_response = await fetch(window.lwj_getApiUrl('/api/database/defaults'));
-      const lwj_result = await lwj_response.json();
+      const lwj_result = await window.lwj_fetchApi('/api/database/defaults');
       console.log('[lwj_database] 默认值响应', lwj_result);
 
       if (lwj_result.code === 0) {
@@ -48,12 +47,11 @@
     lwj_showMessage('正在连接数据库...', 'info');
 
     try {
-      const lwj_response = await fetch(window.lwj_getApiUrl('/api/database/connect'), {
+      const lwj_result = await window.lwj_fetchApi('/api/database/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lwj_user: lwj_user, lwj_password: lwj_password })
       });
-      const lwj_result = await lwj_response.json();
       console.log('[lwj_database] 连接响应', lwj_result);
 
       if (lwj_result.code === 0) {

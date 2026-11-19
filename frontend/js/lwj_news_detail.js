@@ -65,8 +65,7 @@
     lwj_showMessage('正在加载新闻详情...', 'info');
 
     try {
-      const lwj_response = await fetch(lwj_apiUrl);
-      const lwj_result = await lwj_response.json();
+      const lwj_result = await window.lwj_fetchApi('/api/news/' + encodeURIComponent(lwj_id || ''));
       console.log('[lwj_news_detail] 接口响应', lwj_result);
 
       if (lwj_result.code !== 0) {
