@@ -8,7 +8,7 @@ async function lwj_getHealth(lwj_req, lwj_res) {
     const lwj_rows = await lwj_healthModel.lwj_checkDatabase();
     lwj_res.json({
       code: 0,
-      msg: '服务正常',
+      msg: 'ok',
       data: { lwj_database: lwj_rows[0].lwj_ok === 1 }
     });
   } catch (lwj_error) {

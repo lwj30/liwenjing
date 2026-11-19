@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--
+姓名：李汶静 | 学号：24001011030 | 时间：2026-11-19 | 大模型：Tencent Hunyuan Hy
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科技新闻列表 · 李汶静</title>
+  <link rel="stylesheet" href="css/lwj_style.css">
+</head>
+<body>
+  <canvas id="lwj_canvas" class="lwj_canvas" aria-hidden="true"></canvas>
+
+  <div class="lwj_page">
+    <header class="lwj_hero lwj_hero--compact">
+      <div class="lwj_hero-glow"></div>
+      <span class="lwj_badge">LWJ · TECH NEWS</span>
+      <h1 class="lwj_title">科技新闻列表</h1>
+      <p class="lwj_subtitle">数据来自 MySQL 数据表，通过后端接口读取并展示</p>
+    </header>
+
+    <main class="lwj_main">
+      <section class="lwj_section">
+        <div class="lwj_section-head">
+          <div>
+            <h2 class="lwj_section-title">数据接口</h2>
+            <p class="lwj_section-desc">页面通过以下接口获取新闻数据，点击链接可直接查看 JSON 响应。</p>
+          </div>
+          <a class="lwj_back" href="index.html">返回首页</a>
+        </div>
+
+        <div class="lwj_api_bar">
+          <span class="lwj_api_label">后端接口</span>
+          <a id="lwj_news_api_link" class="lwj_api_link" href="#" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+
+        <div id="lwj_news_message" class="lwj_message" role="status" aria-live="polite"></div>
+
+        <div class="lwj_section-head lwj_news_heading">
+          <h2 class="lwj_section-title">新闻列表</h2>
+        </div>
+        <div id="lwj_news_list" class="lwj_news_list"></div>
+      </section>
+    </main>
+
+    <footer class="lwj_footer">
+      <span>李汶静 · 24001011030</span>
+      <span>原生前端 · Express 后端 · MySQL 数据库</span>
+    </footer>
+  </div>
+
+  <script src="js/lwj_canvas.js"></script>
+  <script src="js/lwj_news.js"></script>
+</body>
+</html>

@@ -14,6 +14,9 @@ lwj_app.use(lwj_express.json());
 lwj_app.use(lwj_express.static(lwj_path.join(__dirname, '..', 'frontend')));
 
 lwj_app.use('/api', require('./routes/lwj_health'));
+lwj_app.use('/api/database', require('./routes/lwj_database'));
+lwj_app.use('/api/news', require('./routes/lwj_news'));
+lwj_app.use('/api/gallery', require('./routes/lwj_gallery'));
 
 lwj_app.use((lwj_err, lwj_req, lwj_res, lwj_next) => {
   console.error('[lwj_server_error]', lwj_err);
@@ -21,5 +24,5 @@ lwj_app.use((lwj_err, lwj_req, lwj_res, lwj_next) => {
 });
 
 lwj_app.listen(lwj_PORT, () => {
-  console.log(`[lwj_server] 服务已启动：http://localhost:${lwj_PORT}`);
+  console.log(`Server running at http://localhost:${lwj_PORT}`);
 });

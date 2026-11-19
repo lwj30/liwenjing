@@ -259,3 +259,345 @@ a.lwj_card:hover .lwj_card-arrow {
     align-items: flex-start;
   }
 }
+
+.lwj_hero--compact {
+  padding: 34px 24px 36px;
+}
+
+.lwj_back {
+  padding: 8px 14px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 10px;
+  color: #bcd2ff;
+  font-size: 13px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.lwj_back:hover {
+  border-color: rgba(122, 167, 255, 0.6);
+  background: rgba(122, 167, 255, 0.1);
+}
+
+.lwj_form {
+  display: grid;
+  gap: 18px;
+  padding: 26px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 18px;
+  background: var(--lwj-surface);
+  backdrop-filter: blur(12px);
+}
+
+.lwj_form-row {
+  display: grid;
+  gap: 8px;
+}
+
+.lwj_label {
+  color: #c7d7f5;
+  font-size: 13px;
+}
+
+.lwj_input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 10px;
+  outline: none;
+  background: rgba(6, 12, 28, 0.6);
+  color: var(--lwj-ink);
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lwj_input:focus {
+  border-color: rgba(122, 167, 255, 0.75);
+  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.14);
+}
+
+.lwj_form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lwj_button {
+  padding: 11px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(100deg, #6f9bff, #a07cff);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.lwj_button:hover {
+  transform: translateY(-2px);
+}
+
+.lwj_button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lwj_info {
+  margin-top: 16px;
+  color: #8fa8d6;
+  font-size: 12px;
+}
+
+.lwj_message {
+  display: none;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.lwj_message--success,
+.lwj_message--error,
+.lwj_message--info {
+  display: block;
+}
+
+.lwj_message--success {
+  border: 1px solid rgba(84, 214, 160, 0.4);
+  background: rgba(84, 214, 160, 0.12);
+  color: #9df0cb;
+}
+
+.lwj_message--error {
+  border: 1px solid rgba(255, 118, 138, 0.4);
+  background: rgba(255, 118, 138, 0.12);
+  color: #ffb3c0;
+}
+
+.lwj_message--info {
+  border: 1px solid var(--lwj-line);
+  background: rgba(122, 167, 255, 0.08);
+  color: #bcd2ff;
+}
+
+@media (max-width: 600px) {
+  .lwj_form {
+    padding: 20px 18px;
+  }
+
+  .lwj_form-actions {
+    justify-content: stretch;
+  }
+
+  .lwj_button {
+    width: 100%;
+  }
+}
+
+.lwj_api_bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 14px;
+  background: rgba(122, 167, 255, 0.07);
+}
+
+.lwj_api_label {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(122, 167, 255, 0.18);
+  color: #cfe0ff;
+  font-size: 12px;
+}
+
+.lwj_api_link {
+  color: #9dc0ff;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.lwj_api_link:hover {
+  color: #d3e2ff;
+}
+
+.lwj_news_heading {
+  margin-top: 30px;
+  margin-bottom: 16px;
+}
+
+.lwj_news_list {
+  display: grid;
+  gap: 14px;
+}
+
+.lwj_news_item {
+  padding: 20px 22px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 16px;
+  background: var(--lwj-surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.lwj_news_item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(122, 167, 255, 0.5);
+}
+
+.lwj_news_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lwj_news_category {
+  padding: 4px 10px;
+  border: 1px solid rgba(184, 146, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(184, 146, 255, 0.12);
+  color: #dcc6ff;
+  font-size: 12px;
+}
+
+.lwj_news_time {
+  color: #8095bd;
+  font-size: 12px;
+}
+
+.lwj_news_title {
+  margin: 14px 0 8px;
+  color: #edf3ff;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.lwj_news_summary {
+  margin: 0;
+  color: var(--lwj-muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.lwj_news_foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--lwj-line);
+}
+
+.lwj_news_source {
+  color: #8095bd;
+  font-size: 12px;
+}
+
+.lwj_news_link {
+  color: #9dc0ff;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.lwj_news_link:hover {
+  text-decoration: underline;
+}
+
+.lwj_gallery_list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.lwj_gallery_item {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--lwj-line);
+  border-radius: 18px;
+  background: var(--lwj-surface);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.lwj_gallery_item:hover {
+  transform: translateY(-5px);
+  border-color: rgba(122, 167, 255, 0.55);
+}
+
+.lwj_gallery_image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  background: rgba(122, 167, 255, 0.08);
+}
+
+.lwj_gallery_body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 18px 20px 16px;
+}
+
+.lwj_gallery_title {
+  margin: 12px 0 8px;
+  color: #edf3ff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.lwj_gallery_description {
+  flex: 1;
+  margin: 0 0 14px;
+  color: var(--lwj-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+  .lwj_gallery_image {
+    height: 200px;
+  }
+}
+
+.lwj_detail_content {
+  margin-top: 20px;
+  padding: 28px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 18px;
+  background: var(--lwj-surface);
+  backdrop-filter: blur(12px);
+}
+
+.lwj_detail_title {
+  margin: 18px 0 10px;
+  color: #edf3ff;
+  font-size: 24px;
+  font-weight: 650;
+}
+
+.lwj_detail_meta {
+  margin: 0 0 22px;
+  color: #8095bd;
+  font-size: 13px;
+}
+
+.lwj_detail_summary {
+  margin: 0;
+  color: #d6e2f8;
+  font-size: 15px;
+  line-height: 2;
+  text-indent: 2em;
+}
