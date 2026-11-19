@@ -140,6 +140,9 @@
     '/api/database/defaults': { code: 0, msg: 'mock 数据', data: {
       lwj_user: 'root', lwj_password: '********',
       lwj_host: 'localhost', lwj_name: 'lwj_db'
+    } },
+    '/api/database/connect': { code: 0, msg: 'mock：静态托管环境无 MySQL，此处为模拟连接成功', data: {
+      lwj_ok: true, lwj_mode: 'mock'
     } }
   };
 }());
