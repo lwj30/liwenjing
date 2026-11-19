@@ -1,0 +1,261 @@
+/*
+ * 姓名：李汶静 | 学号：24001011030 | 时间：2026-11-19 | 大模型：Tencent Hunyuan Hy
+ */
+:root {
+  --lwj-ink: #eef4ff;
+  --lwj-muted: #9fb2d4;
+  --lwj-accent: #7aa7ff;
+  --lwj-accent-2: #b892ff;
+  --lwj-line: rgba(148, 180, 255, 0.18);
+  --lwj-surface: rgba(18, 28, 54, 0.58);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  color: var(--lwj-ink);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(58, 92, 190, 0.45) 0%, transparent 42%),
+    radial-gradient(circle at 82% 28%, rgba(137, 82, 200, 0.32) 0%, transparent 40%),
+    linear-gradient(160deg, #0a1024 0%, #070b18 60%, #050814 100%);
+  overflow-x: hidden;
+}
+
+.lwj_canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lwj_page {
+  position: relative;
+  z-index: 1;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 72px 28px 40px;
+}
+
+.lwj_hero {
+  position: relative;
+  text-align: center;
+  padding: 42px 28px 46px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(28, 42, 82, 0.66), rgba(12, 20, 44, 0.5));
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+.lwj_hero-glow {
+  position: absolute;
+  top: -140px;
+  left: 50%;
+  width: 420px;
+  height: 280px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(122, 167, 255, 0.34), transparent 68%);
+  pointer-events: none;
+}
+
+.lwj_badge {
+  position: relative;
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid rgba(122, 167, 255, 0.35);
+  border-radius: 999px;
+  color: #bcd2ff;
+  background: rgba(122, 167, 255, 0.1);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+}
+
+.lwj_title {
+  position: relative;
+  margin: 22px 0 12px;
+  font-size: clamp(30px, 5vw, 48px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(100deg, #ffffff 0%, #a9c6ff 52%, #d8bcff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lwj_subtitle {
+  position: relative;
+  margin: 0;
+  color: var(--lwj-muted);
+  font-size: 15px;
+}
+
+.lwj_subtitle strong {
+  color: #dbe8ff;
+  font-weight: 600;
+}
+
+.lwj_divider {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  margin: 0 14px;
+  vertical-align: -2px;
+  background: var(--lwj-line);
+}
+
+.lwj_meta {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.lwj_chip {
+  padding: 8px 16px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #c7d7f5;
+  font-size: 13px;
+}
+
+.lwj_main {
+  margin-top: 38px;
+}
+
+.lwj_section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.lwj_section-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+}
+
+.lwj_section-desc {
+  margin: 0;
+  color: var(--lwj-muted);
+  font-size: 13px;
+}
+
+.lwj_count {
+  color: #8ea6d2;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+.lwj_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  gap: 16px;
+}
+
+.lwj_card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 158px;
+  padding: 22px;
+  border: 1px solid var(--lwj-line);
+  border-radius: 18px;
+  background: var(--lwj-surface);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+a.lwj_card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(122, 167, 255, 0.6);
+  box-shadow: 0 20px 44px rgba(45, 84, 175, 0.28);
+}
+
+.lwj_card-index {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: #8fa8d6;
+}
+
+.lwj_card-title {
+  margin-top: 20px;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.lwj_card-desc {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--lwj-muted);
+}
+
+.lwj_card-arrow {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  color: var(--lwj-accent);
+  font-size: 18px;
+  transition: transform 0.25s ease;
+}
+
+a.lwj_card:hover .lwj_card-arrow {
+  transform: translateX(5px);
+}
+
+.lwj_card--active {
+  border-color: rgba(122, 167, 255, 0.5);
+  background: linear-gradient(145deg, rgba(40, 66, 130, 0.72), rgba(20, 32, 66, 0.62));
+}
+
+.lwj_card--empty {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.lwj_footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lwj-line);
+  color: #8095bd;
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .lwj_page {
+    padding: 32px 16px 28px;
+  }
+
+  .lwj_hero {
+    padding: 34px 18px 38px;
+  }
+
+  .lwj_section-head {
+    align-items: flex-start;
+  }
+}
