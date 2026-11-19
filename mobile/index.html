@@ -1,0 +1,1215 @@
+﻿<!--
+  作者：李汶静
+  创建时间：2026-11-16 13:55
+  使用模型：DeepSeek-V4.1-Flash
+  功能：移动端触摸交互课程页，讲解 touch 事件与 TouchList 模型，并提供事件探针、滑动识别、长按双击三个可交互演示与四个课堂任务入口。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>按下 · 滑动 · 缩放 | 移动端触摸交互</title>
+  <link rel="stylesheet" href="../cdn/fonts/fonts.css">
+  <style>
+    /* ====== 主题变量：深紫夜色 + 荧光绿点缀 ====== */
+    :root {
+      --lwj_bg: #0a0810;
+      --lwj_panel: #141020;
+      --lwj_panel-2: #1b1529;
+      --lwj_line: rgba(255, 255, 255, 0.09);
+      --lwj_text: #edeaf5;
+      --lwj_muted: #948da9;
+      --lwj_lime: #c8f24d;
+      --lwj_violet: #8b6cff;
+      --lwj_red: #ff6b5e;
+      --lwj_cyan: #4fd8d0;
+      --lwj_mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background:
+        radial-gradient(900px 520px at 50% -8%, rgba(139, 108, 255, 0.20), transparent 70%),
+        radial-gradient(700px 420px at 100% 30%, rgba(200, 242, 77, 0.07), transparent 70%),
+        var(--lwj_bg);
+      color: var(--lwj_text);
+      line-height: 1.75;
+      padding-bottom: 64px;
+    }
+
+    .lwj_wrap { max-width: 820px; margin: 0 auto; padding: 0 18px; }
+
+    /* ====== 顶部返回条 ====== */
+    .lwj_topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 0 8px;
+      font-size: 12.5px;
+      color: var(--lwj_muted);
+      letter-spacing: 0.04em;
+    }
+    .lwj_topbar a {
+      color: var(--lwj_muted);
+      text-decoration: none;
+      border: 1px solid var(--lwj_line);
+      border-radius: 999px;
+      padding: 5px 12px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .lwj_topbar a:hover { color: var(--lwj_lime); border-color: rgba(200, 242, 77, 0.5); }
+
+    /* ====== 页头 ====== */
+    .lwj_hero { padding: 26px 0 30px; border-bottom: 1px solid var(--lwj_line); }
+    .lwj_hero .lwj_kicker {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.42em;
+      color: var(--lwj_lime);
+      font-family: var(--lwj_mono);
+      text-transform: uppercase;
+    }
+    .lwj_hero h1 {
+      font-size: clamp(30px, 8vw, 44px);
+      line-height: 1.25;
+      letter-spacing: 0.06em;
+      margin: 12px 0 6px;
+      background: linear-gradient(100deg, #ffffff, #d6ccff 45%, var(--lwj_lime));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .lwj_hero .lwj_sub { font-size: 15px; color: var(--lwj_muted); letter-spacing: 0.1em; }
+    .lwj_hero p.lwj_lead { margin-top: 16px; font-size: 14.5px; color: #c9c3d9; }
+    .lwj_hero code {
+      font-family: var(--lwj_mono);
+      font-size: 0.92em;
+      background: rgba(139, 108, 255, 0.16);
+      border: 1px solid rgba(139, 108, 255, 0.32);
+      border-radius: 5px;
+      padding: 1px 5px;
+      color: #d9d0ff;
+    }
+
+    /* ====== 通用提示条 ====== */
+    .lwj_tip {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      background: rgba(79, 216, 208, 0.07);
+      border: 1px solid rgba(79, 216, 208, 0.26);
+      color: #b9ece8;
+    }
+    .lwj_tip .lwj_tip-icon { flex: 0 0 auto; }
+
+    /* ====== 章节 ====== */
+    .lwj_section { padding: 34px 0 6px; border-bottom: 1px solid var(--lwj_line); }
+    .lwj_section:last-of-type { border-bottom: 0; }
+    .lwj_section-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    .lwj_num {
+      flex: 0 0 auto;
+      font-family: var(--lwj_mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--lwj_lime);
+      background: rgba(200, 242, 77, 0.1);
+      border: 1px solid rgba(200, 242, 77, 0.3);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+    }
+    .lwj_section-head h2 {
+      font-size: clamp(19px, 5vw, 23px);
+      letter-spacing: 0.02em;
+      line-height: 1.45;
+    }
+    .lwj_section-head h2 small {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 400;
+      color: var(--lwj_muted);
+      letter-spacing: 0.06em;
+      margin-top: 3px;
+    }
+    .lwj_section p { font-size: 14.5px; color: #c9c3d9; margin-bottom: 14px; }
+    .lwj_section p strong, .lwj_section li strong { color: #fff; }
+    .lwj_section p code, .lwj_section li code, .lwj_section td code {
+      font-family: var(--lwj_mono);
+      font-size: 0.9em;
+      background: rgba(139, 108, 255, 0.16);
+      border: 1px solid rgba(139, 108, 255, 0.3);
+      border-radius: 5px;
+      padding: 1px 5px;
+      color: #d9d0ff;
+      white-space: nowrap;
+    }
+
+    /* ====== 表格 ====== */
+    .lwj_table-wrap {
+      overflow-x: auto;
+      margin: 6px 0 18px;
+      border: 1px solid var(--lwj_line);
+      border-radius: 12px;
+      background: var(--lwj_panel);
+      -webkit-overflow-scrolling: touch;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 520px; }
+    th, td { text-align: left; padding: 11px 13px; vertical-align: top; border-bottom: 1px solid var(--lwj_line); }
+    th { background: rgba(255, 255, 255, 0.03); color: #fff; font-weight: 600; font-size: 12.5px; letter-spacing: 0.04em; }
+    tr:last-child td { border-bottom: 0; }
+    td { color: #bfb9d0; }
+    td:first-child { color: #e6e1f5; }
+
+    /* ====== 代码块 ====== */
+    .lwj_code {
+      position: relative;
+      margin: 4px 0 18px;
+      border: 1px solid var(--lwj_line);
+      border-radius: 12px;
+      background: #0c0916;
+      overflow: hidden;
+    }
+    .lwj_code-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 13px;
+      font-family: var(--lwj_mono);
+      font-size: 11px;
+      color: var(--lwj_muted);
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--lwj_line);
+      letter-spacing: 0.06em;
+    }
+    .lwj_code pre {
+      padding: 14px 15px;
+      overflow-x: auto;
+      font-family: var(--lwj_mono);
+      font-size: 12px;
+      line-height: 1.72;
+      color: #d3cde6;
+      -webkit-overflow-scrolling: touch;
+    }
+    .lwj_code .lwj_cmt { color: #6f6885; }
+    .lwj_code .lwj_key { color: var(--lwj_violet); }
+
+    /* ====== 演示面板 ====== */
+    .lwj_demo {
+      margin: 8px 0 20px;
+      padding: 16px;
+      border: 1px solid var(--lwj_line);
+      border-radius: 16px;
+      background: linear-gradient(160deg, var(--lwj_panel-2), var(--lwj_panel));
+    }
+    .lwj_demo-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .lwj_demo-head h3 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; }
+    .lwj_badge {
+      font-family: var(--lwj_mono);
+      font-size: 10.5px;
+      color: var(--lwj_cyan);
+      border: 1px solid rgba(79, 216, 208, 0.35);
+      border-radius: 999px;
+      padding: 2px 9px;
+      white-space: nowrap;
+    }
+
+    /* 事件探针 */
+    .lwj_probe {
+      position: relative;
+      height: 190px;
+      border-radius: 12px;
+      background:
+        radial-gradient(220px 140px at 50% 50%, rgba(139, 108, 255, 0.18), transparent 72%),
+        #08060e;
+      border: 1px dashed rgba(139, 108, 255, 0.34);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #8c84a6;
+      font-size: 13px;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .lwj_probe-dot {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      margin: -13px 0 0 -13px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff, var(--lwj_lime) 55%, rgba(200, 242, 77, 0) 72%);
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+    }
+    .lwj_probe-dot.is-on { opacity: 1; }
+
+    .lwj_log {
+      margin-top: 12px;
+      height: 150px;
+      overflow-y: auto;
+      border-radius: 10px;
+      background: #08060e;
+      border: 1px solid var(--lwj_line);
+      padding: 8px 10px;
+      font-family: var(--lwj_mono);
+      font-size: 11.5px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .lwj_log-empty { color: #635c78; }
+    .lwj_log-item {
+      display: flex;
+      gap: 10px;
+      padding: 3px 0 3px 8px;
+      border-left: 2px solid var(--lwj_violet);
+      margin-bottom: 2px;
+      color: #a9a2bf;
+      animation: lwj_slide-in 0.18s ease-out;
+    }
+    .lwj_log-item--start { border-left-color: var(--lwj_lime); }
+    .lwj_log-item--move { border-left-color: var(--lwj_cyan); }
+    .lwj_log-item--end { border-left-color: var(--lwj_violet); }
+    .lwj_log-item--click { border-left-color: var(--lwj_red); }
+    .lwj_log-item--cancel { border-left-color: #f0b84a; }
+    .lwj_log-name { color: #fff; flex: 0 0 auto; }
+    .lwj_log-detail { color: #7f7895; }
+    @keyframes lwj_slide-in {
+      from { opacity: 0; transform: translateX(-4px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .lwj_log-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--lwj_muted);
+    }
+    .lwj_btn {
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--lwj_text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--lwj_line);
+      border-radius: 999px;
+      padding: 5px 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      touch-action: manipulation;
+    }
+    .lwj_btn:hover { border-color: rgba(200, 242, 77, 0.5); color: var(--lwj_lime); }
+    .lwj_btn:active { background: rgba(200, 242, 77, 0.16); }
+
+    /* 滑动识别器 */
+    .lwj_swipe {
+      height: 170px;
+      border-radius: 12px;
+      background:
+        radial-gradient(200px 120px at 50% 50%, rgba(79, 216, 208, 0.16), transparent 72%),
+        #08060e;
+      border: 1px solid rgba(79, 216, 208, 0.24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      overflow: hidden;
+    }
+    .lwj_swipe-core {
+      font-size: 44px;
+      line-height: 1;
+      color: var(--lwj_cyan);
+      transition: transform 0.18s ease-out;
+    }
+    .lwj_swipe-hint { font-size: 12px; color: #8c84a6; }
+    .lwj_swipe-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--lwj_muted);
+    }
+    .lwj_swipe-meta b { color: #fff; font-family: var(--lwj_mono); font-weight: 500; }
+
+    /* 长按 / 双击 */
+    .lwj_tap {
+      height: 132px;
+      border-radius: 12px;
+      background:
+        radial-gradient(180px 110px at 50% 50%, rgba(200, 242, 77, 0.13), transparent 70%),
+        #08060e;
+      border: 1px solid rgba(200, 242, 77, 0.24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      text-align: center;
+      font-size: 14px;
+      color: #e6e1f5;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      transition: transform 0.15s, border-color 0.2s;
+    }
+    .lwj_tap small { font-size: 12px; color: #8c84a6; }
+    .lwj_tap.is-hold { transform: scale(0.97); border-color: var(--lwj_lime); }
+    .lwj_tap-result { margin-top: 12px; font-size: 13px; color: var(--lwj_muted); }
+    .lwj_tap-result b { color: var(--lwj_lime); font-family: var(--lwj_mono); font-weight: 500; }
+
+    /* ====== 任务卡片 ====== */
+    .lwj_tasks { display: grid; gap: 14px; margin: 6px 0 20px; }
+    .lwj_task {
+      display: block;
+      padding: 16px 16px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--lwj_line);
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .lwj_task:hover { border-color: rgba(200, 242, 77, 0.45); transform: translateY(-2px); }
+    .lwj_task-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .lwj_task-top h3 { font-size: 15.5px; letter-spacing: 0.02em; }
+    .lwj_task-stars { color: var(--lwj_lime); font-size: 12px; letter-spacing: 0.1em; flex: 0 0 auto; }
+    .lwj_task p { font-size: 13px; color: #a9a2bf; margin-bottom: 8px; }
+    .lwj_task-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .lwj_task-tags span {
+      font-size: 11px;
+      color: #b3abca;
+      border: 1px solid var(--lwj_line);
+      border-radius: 999px;
+      padding: 2px 9px;
+    }
+    .lwj_task-go {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--lwj_lime);
+      font-family: var(--lwj_mono);
+    }
+
+    /* ====== 页脚 ====== */
+    .lwj_footer {
+      margin-top: 34px;
+      padding-top: 22px;
+      border-top: 1px solid var(--lwj_line);
+      text-align: center;
+      font-size: 12px;
+      color: #6f6885;
+      letter-spacing: 0.06em;
+    }
+    .lwj_footer .lwj_footer-quote { color: #8c84a6; margin-bottom: 10px; }
+    .lwj_footer a { color: var(--lwj_lime); text-decoration: none; }
+
+    @media (min-width: 860px) {
+      body { padding-top: 10px; }
+      .lwj_probe { height: 220px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lwj_wrap">
+    <!-- 顶部返回条 -->
+    <div class="lwj_topbar">
+      <span>高级网页设计 · 移动端</span>
+      <a href="../index.html">← 返回作品集</a>
+    </div>
+
+    <!-- 页头 -->
+    <header class="lwj_hero">
+      <span class="lwj_kicker">Touch &amp; Gesture</span>
+      <h1>按下 · 滑动 · 缩放</h1>
+      <p class="lwj_sub">移动端常用触摸事件怎么用</p>
+      <p class="lwj_lead">
+        手机上用户用的是手指——按下、滑动、长按、双指缩放、摇一摇。这节课把触摸事件讲清、演示透，再用 4 个递进任务把它练熟。
+      </p>
+      <div class="lwj_tip">
+        <span class="lwj_tip-icon">📱</span>
+        <span>本页演示全部基于 <code>touch</code> 触摸事件，<strong>请用手机打开</strong>；没有手机时，可用浏览器的设备模式（F12 → 切换设备）体验单指操作。桌面端下页面会自动降级为鼠标模拟，方便查看日志。</span>
+      </div>
+    </header>
+
+    <!-- ====== 1 四个坑 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">1</span>
+        <h2>手机上最容易踩的四个坑<small>先避坑，再动手</small></h2>
+      </div>
+
+      <div class="lwj_table-wrap">
+        <table>
+          <thead>
+            <tr><th>写出来的现象</th><th>真正的原因</th><th>正确做法</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>按钮点一下变色，之后就一直是那个颜色</td>
+              <td>用了 <code>:hover</code>。手指没有“悬停”，触摸后状态不会自动撤销</td>
+              <td>改用 <code>:active</code>，或只在 <code>@media (hover:hover)</code> 里写 hover</td>
+            </tr>
+            <tr>
+              <td>点击按钮反应慢半拍</td>
+              <td>浏览器在等“是不是双击”，历史上会等 300ms</td>
+              <td>加 <code>touch-action: manipulation</code>，或直接用 touch 事件自己处理</td>
+            </tr>
+            <tr>
+              <td>拖动卡片时整个页面跟着上下滚</td>
+              <td>浏览器把手势优先给了页面滚动</td>
+              <td>容器加 <code>touch-action: none</code>（要接管手势）或 <code>pan-y</code>（只接管横向）</td>
+            </tr>
+            <tr>
+              <td>想判断“往哪滑、几根手指”，完全拿不到</td>
+              <td>只监听了 <code>click</code>，它只告诉你“点完了”</td>
+              <td>监听 <code>touchstart / touchmove / touchend</code>，从 <code>touches</code> 里取坐标与数量</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>🧠 <strong>一句话：</strong>手指是“多个触点 + 一段轨迹”。要跟手、要方向、要几根手指——这些都得靠触摸事件。</p>
+
+      <p><strong>⚠️ 手机页面必备三件套</strong>（少一个都会出怪现象）：</p>
+      <p>① <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code>，不写会整体缩小；<br>
+         ② <code>-webkit-tap-highlight-color: transparent</code>，去掉点击灰块；<br>
+         ③ 要接管手势的容器加 <code>touch-action: none</code>，否则浏览器会先滚动页面。</p>
+
+      <div class="lwj_code">
+        <div class="lwj_code-head"><span>最小可运行骨架</span><span>HTML</span></div>
+<pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  <span class="lwj_cmt">&lt;!-- ① 放 head 里，紧跟 charset --&gt;</span>
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;我的手势页面&lt;/title&gt;
+  &lt;style&gt;
+    <span class="lwj_cmt">/* ② 全局去掉点击灰块（iOS / 安卓都认） */</span>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; font-family: "Microsoft YaHei", sans-serif; }
+
+    <span class="lwj_cmt">/* ③ 只加在要接管手势的容器上，不是加在 body 上 */</span>
+    .lwj_pad {
+      height: 180px;
+      background: #151022;
+      touch-action: none;        <span class="lwj_cmt">/* 这一块的手势归我，浏览器别滚 */</span>
+      user-select: none;         <span class="lwj_cmt">/* 长按不选中文字 */</span>
+      -webkit-touch-callout: none;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class="lwj_pad" id="lwjPad"&gt;在这里滑动&lt;/div&gt;
+  &lt;script&gt;
+    <span class="lwj_cmt">// ④ 事件与 touch-action 配对：容器管手势，页面其他区域照常滚动</span>
+    var lwj_pad = document.getElementById('lwjPad');
+    var lwj_sx = 0;
+
+    lwj_pad.addEventListener('touchstart', function (e) {
+      lwj_sx = e.touches[0].clientX;
+    }, { passive: true });
+
+    lwj_pad.addEventListener('touchend', function (e) {
+      var lwj_dx = e.changedTouches[0].clientX - lwj_sx;
+      console.log(lwj_dx &gt; 0 ? '向右滑' : '向左滑');
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+      </div>
+
+      <div class="lwj_table-wrap">
+        <table>
+          <thead><tr><th>写错的位置</th><th>会发生什么</th></tr></thead>
+          <tbody>
+            <tr><td><code>touch-action:none</code> 加在 <code>body</code> 上</td><td>整个页面都滚不动了，用户无法上下浏览</td></tr>
+            <tr><td>只加了 <code>touch-action</code>，忘了阻止默认行为</td><td>横向滑动时页面仍会上下轻微抖动，手感“发飘”</td></tr>
+            <tr><td>页面上没有任何 <code>touch-action</code></td><td>手指一拖，页面先滚，手势代码收到的是断断续续的坐标</td></tr>
+            <tr><td>给所有元素都加 <code>touch-action:none</code></td><td>整页失去滚动，等于把手机页面做成了“死页面”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>🧠 <strong>判断口诀：</strong>哪块区域要“自己动手势”，就只给哪块加 <code>touch-action</code>；想让纵向还能滚动，就用 <code>touch-action: pan-y</code>。</p>
+    </section>
+
+    <!-- ====== 2 事件模型 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">2</span>
+        <h2>四个触摸事件 + TouchList 对象<small>核心模型</small></h2>
+      </div>
+
+      <div class="lwj_table-wrap">
+        <table>
+          <thead><tr><th>事件</th><th>什么时候触发</th><th>典型用途</th></tr></thead>
+          <tbody>
+            <tr><td><code>touchstart</code></td><td>手指刚按下</td><td>记录起点、开始长按计时</td></tr>
+            <tr><td><code>touchmove</code></td><td>手指在屏幕上移动（会连续触发很多次）</td><td>跟手拖动、画板、判断方向</td></tr>
+            <tr><td><code>touchend</code></td><td>手指抬起</td><td>计算滑动距离与速度，决定是否翻页</td></tr>
+            <tr><td><code>touchcancel</code></td><td>被系统打断（来电、消息横幅、手势返回）</td><td>清理状态，避免“卡住”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>事件对象里最关键的是 <code>touches</code>、<code>targetTouches</code>、<code>changedTouches</code> 三个列表：</p>
+
+      <div class="lwj_code">
+        <div class="lwj_code-head"><span>三个列表的区别</span><span>JS</span></div>
+<pre>lwj_pad.addEventListener('touchstart', function (e) {
+  <span class="lwj_cmt">// touches：屏幕上所有手指（含其他元素上的）</span>
+  <span class="lwj_cmt">// targetTouches：只在当前元素上的手指</span>
+  <span class="lwj_cmt">// changedTouches：本次事件“变化”的手指（抬手时从 touches 里消失的就是它）</span>
+  var lwj_t = e.touches[0];              <span class="lwj_cmt">// 第一根手指</span>
+  console.log(lwj_t.clientX, lwj_t.clientY); <span class="lwj_cmt">// 相对可视区域</span>
+  console.log(lwj_t.pageX, lwj_t.pageY);     <span class="lwj_cmt">// 相对整个文档（含滚动）</span>
+  console.log(e.touches.length);         <span class="lwj_cmt">// 几根手指</span>
+});</pre>
+      </div>
+
+      <p>🧠 <strong>为什么抬手时要用 <code>changedTouches[0]</code>？</strong>因为 <code>touchend</code> 触发时，那根手指已经从 <code>touches</code> 里移除了，用 <code>touches[0]</code> 可能拿到别的指头，甚至报 <code>undefined</code>。</p>
+
+      <p>🧩 <strong>为什么不用 click 就够了？</strong><code>click</code> 只是“按下并抬起”的结果，拿不到中间过程——拖动时跟不了手、判断不了方向、也分不清几根手指。</p>
+    </section>
+
+    <!-- ====== 3 演示一 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">3</span>
+        <h2>演示一：看清事件触发顺序<small>先观察，再解释</small></h2>
+      </div>
+
+      <p>在下面这块黑色区域里<strong>用手指按一下、拖一拖、再抬起</strong>，日志会按真实顺序记录。注意观察：一次拖动会触发多少次 <code>touchmove</code>？<code>click</code> 又在什么时候到来？</p>
+
+      <div class="lwj_demo">
+        <div class="lwj_demo-head">
+          <h3>事件探针</h3>
+          <span class="lwj_badge" id="lwj_probe_mode">检测中…</span>
+        </div>
+        <div class="lwj_probe" id="lwj_probe">
+          <span class="lwj_probe-hint">用手指在这里按下并拖动</span>
+          <span class="lwj_probe-dot" id="lwj_probe_dot"></span>
+        </div>
+        <div class="lwj_log" id="lwj_log">
+          <p class="lwj_log-empty">等待你的第一次触摸……</p>
+        </div>
+        <div class="lwj_log-foot">
+          <span>本次手势 touchmove：<b id="lwj_move_count">0</b> 次</span>
+          <button class="lwj_btn" id="lwj_clear_log" type="button">清空日志</button>
+        </div>
+      </div>
+
+      <p>✅ <strong>你应该观察到：</strong><code>touchstart</code> → 若干次 <code>touchmove</code> → <code>touchend</code> → 最后才是 <code>click</code>。而且移动距离越大，move 的次数越多——这就是“跟手”的原理。</p>
+
+      <p>⚠️ <code>touchend</code> 之后系统还会补发一次 <code>click</code>。如果两套逻辑都写了，就会“点一次执行两次”，记得二选一，或在 touch 处理里 <code>preventDefault()</code>。</p>
+    </section>
+
+    <!-- ====== 4 演示二 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">4</span>
+        <h2>演示二：识别滑动方向<small>手势识别的通用套路</small></h2>
+      </div>
+
+      <p>在方块上<strong>朝四个方向滑动手指</strong>，下方会显示方向与距离。核心只有三步：<strong>记起点 → 算差值 → 比较绝对值</strong>。</p>
+
+      <div class="lwj_demo">
+        <div class="lwj_demo-head">
+          <h3>滑动识别器</h3>
+          <span class="lwj_badge">阈值 30px</span>
+        </div>
+        <div class="lwj_swipe" id="lwj_swipe">
+          <div class="lwj_swipe-core" id="lwj_swipe_core">↕</div>
+          <div class="lwj_swipe-hint">按住后朝 上 / 下 / 左 / 右 滑</div>
+        </div>
+        <div class="lwj_swipe-meta">
+          <span>方向：<b id="lwj_swipe_dir">—</b></span>
+          <span>横向位移：<b id="lwj_swipe_dx">0 px</b></span>
+          <span>纵向位移：<b id="lwj_swipe_dy">0 px</b></span>
+        </div>
+      </div>
+
+      <div class="lwj_code">
+        <div class="lwj_code-head"><span>滑动方向判断</span><span>JS</span></div>
+<pre>var lwj_startX = 0, lwj_startY = 0;
+
+lwj_pad.addEventListener('touchstart', function (e) {
+  var lwj_t = e.touches[0];        <span class="lwj_cmt">// 按下的第一根手指</span>
+  lwj_startX = lwj_t.clientX;
+  lwj_startY = lwj_t.clientY;
+}, { passive: true });
+
+lwj_pad.addEventListener('touchend', function (e) {
+  var lwj_t = e.changedTouches[0]; <span class="lwj_cmt">// 抬手时用它，touches 里已经没这根手指</span>
+  var lwj_dx = lwj_t.clientX - lwj_startX;  <span class="lwj_cmt">// 横向位移</span>
+  var lwj_dy = lwj_t.clientY - lwj_startY;  <span class="lwj_cmt">// 纵向位移</span>
+  var lwj_line = 30;               <span class="lwj_cmt">// 阈值：太小会误判成点击</span>
+
+  if (Math.abs(lwj_dx) &lt; lwj_line &amp;&amp; Math.abs(lwj_dy) &lt; lwj_line) {
+    console.log('这是一次点击，不算滑动');
+    return;
+  }
+
+  <span class="lwj_cmt">// 谁大听谁的：横向大就是左右，纵向大就是上下</span>
+  if (Math.abs(lwj_dx) &gt; Math.abs(lwj_dy)) {
+    console.log(lwj_dx &gt; 0 ? '向右滑' : '向左滑');
+  } else {
+    console.log(lwj_dy &gt; 0 ? '向下滑' : '向上滑');
+  }
+});</pre>
+      </div>
+
+      <p>🧠 <strong>为什么要阈值？</strong>手指按下去几乎不可能完全不动，几个像素的抖动会被误判成“滑动”。30px 是个经验值，卡片越大可以适当加大。</p>
+
+      <p>🚀 <strong>进阶思路：</strong>再加上“滑动速度”就能区分“慢慢拖”和“快速甩”——用 <code>距离 ÷ 时间</code> 计算，很多轮播库就是这样判断“轻扫翻页”的。</p>
+    </section>
+
+    <!-- ====== 5 演示三 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">5</span>
+        <h2>演示三：长按与双击<small>时间维度的判断</small></h2>
+      </div>
+
+      <p><strong>长按</strong>：按下时启动定时器，600ms 内没抬手就算长按；抬手就取消。<strong>双击</strong>：记录上次点击时间，两次间隔小于 300ms 算双击。</p>
+
+      <div class="lwj_demo">
+        <div class="lwj_demo-head">
+          <h3>长按 / 双击测试区</h3>
+          <span class="lwj_badge">长按 600ms · 双击 300ms</span>
+        </div>
+        <div class="lwj_tap" id="lwj_tap">
+          <span>长按我（0.6 秒）</span>
+          <small>或者快速点两下</small>
+        </div>
+        <p class="lwj_tap-result">结果：<b id="lwj_tap_result">—</b></p>
+      </div>
+
+      <div class="lwj_code">
+        <div class="lwj_code-head"><span>长按 + 双击</span><span>JS</span></div>
+<pre>var lwj_timer = null;
+var lwj_lastTap = 0;
+
+el.addEventListener('touchstart', function () {
+  lwj_timer = setTimeout(function () {
+    console.log('长按触发');
+  }, 600);
+}, { passive: true });
+
+el.addEventListener('touchend', function () {
+  clearTimeout(lwj_timer);            <span class="lwj_cmt">// 抬手了，取消长按</span>
+
+  var lwj_now = Date.now();
+  if (lwj_now - lwj_lastTap &lt; 300) {
+    console.log('双击');
+    lwj_lastTap = 0;                  <span class="lwj_cmt">// 重置，避免三击被算成两次双击</span>
+  } else {
+    lwj_lastTap = lwj_now;
+  }
+});
+
+<span class="lwj_cmt">// 被电话、通知打断时也要清理定时器，否则状态会卡住</span>
+el.addEventListener('touchcancel', function () {
+  clearTimeout(lwj_timer);
+});</pre>
+      </div>
+
+      <p>⚠️ 长按还会触发系统菜单（选中文字、图片另存）。记得加 <code>user-select:none</code> 和 <code>-webkit-touch-callout:none</code>（iOS）。</p>
+    </section>
+
+    <!-- ====== 6 多指与设备 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">6</span>
+        <h2>多指缩放与设备能力事件<small>触摸之外的传感器</small></h2>
+      </div>
+
+      <p><strong>双指缩放</strong>的本质是“两指距离的变化”：算出当前两指间距，和上一帧比较，得到缩放比例。</p>
+
+      <div class="lwj_code">
+        <div class="lwj_code-head"><span>双指缩放核心</span><span>JS</span></div>
+<pre><span class="lwj_cmt">// ① 算两根手指之间的直线距离（单位：像素）</span>
+function lwj_dist(t1, t2) {
+  <span class="lwj_cmt">// Math.hypot(a, b) 就是勾股定理 √(a² + b²)，比手写 Math.sqrt 更直观</span>
+  return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+}
+
+<span class="lwj_cmt">// ② 记住“上一帧”的两指距离，用来和当前帧做比较</span>
+var lwj_lastDist = 0;
+
+el.addEventListener('touchmove', function (e) {
+  if (e.touches.length &lt; 2) return;  <span class="lwj_cmt">// 少于两根手指不处理（单指是拖动）</span>
+
+  <span class="lwj_cmt">// ③ 取当前两指，算出本帧距离</span>
+  var lwj_d = lwj_dist(e.touches[0], e.touches[1]);
+
+  <span class="lwj_cmt">// ④ 第一帧没有“上一帧”，lwj_lastDist 还是 0，先跳过</span>
+  if (lwj_lastDist) {
+    var lwj_scale = lwj_d / lwj_lastDist;  <span class="lwj_cmt">// &gt;1 放大，&lt;1 缩小</span>
+    console.log('本次缩放比例', lwj_scale.toFixed(2));
+  }
+
+  <span class="lwj_cmt">// ⑤ 把本帧距离存下来，下一帧就用它当“上一帧”</span>
+  lwj_lastDist = lwj_d;
+}, { passive: false });  <span class="lwj_cmt">// 非被动模式，才能 preventDefault 阻止整页缩放</span>
+
+el.addEventListener('touchstart', function () {
+  lwj_lastDist = 0;  <span class="lwj_cmt">// 新一轮手势开始，清空上一轮的距离</span>
+}, { passive: true });</pre>
+      </div>
+
+      <div class="lwj_table-wrap">
+        <table>
+          <thead><tr><th>代码里的关键点</th><th>为什么这么写</th></tr></thead>
+          <tbody>
+            <tr><td><code>Math.hypot(dx, dy)</code></td><td>直接算两点直线距离，等价于 <code>Math.sqrt(dx*dx + dy*dy)</code>，少写乘法不易错</td></tr>
+            <tr><td><code>clientX / clientY</code></td><td>两指必须用同一套坐标系（都用 client 或都用 page），混用算出的距离会错</td></tr>
+            <tr><td><code>scale &gt; 1</code> 表示放大</td><td>两指间距变大 = 图片被“拉开”了，比例就是本帧相对上一帧的放大倍数</td></tr>
+            <tr><td><code>toFixed(2)</code></td><td>日志里保留两位小数，避免一大串 0.999999 干扰观察</td></tr>
+            <tr><td><code>{ passive: false }</code></td><td>告诉浏览器“我要阻止默认行为”，否则 <code>preventDefault()</code> 会失效并报警告</td></tr>
+            <tr><td><code>scale</code> 是“每帧”的比例</td><td>页面真正要用的“总倍数”要<strong>累乘</strong>：<code>total = total * scale</code>，并限制在 1～4 倍之间</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>还有三类在作业里很出彩的“设备事件”：</p>
+
+      <div class="lwj_table-wrap">
+        <table>
+          <thead><tr><th>事件</th><th>能做什么</th><th>注意点</th></tr></thead>
+          <tbody>
+            <tr><td><code>orientationchange</code> / <code>resize</code></td><td>横竖屏切换时重排布局或重绘 canvas</td><td>resize 会连续触发，记得防抖</td></tr>
+            <tr><td><code>deviceorientation</code></td><td>陀螺仪：倾斜角度（α β γ），做“水平仪”“3D 视差”</td><td>iOS 13+ 必须用户点击后调用 <code>DeviceOrientationEvent.requestPermission()</code></td></tr>
+            <tr><td><code>devicemotion</code></td><td>加速度：摇一摇、计步、晃动检测</td><td>阈值判断 + 冷却时间，否则一次摇动触发十几次</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>⚠️ 传感器事件<strong>必须在真机上测</strong>，普通电脑浏览器收不到数据。写代码时一定要做“没有传感器”的降级分支，否则就是一片空白。</p>
+    </section>
+
+    <!-- ====== 7 任务 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">7</span>
+        <h2>课堂实践任务<small>观察 → 实现 → 综合 → 拓展</small></h2>
+      </div>
+
+      <p>四个任务分别是不同的能力维度：<strong>观察记录</strong>、<strong>手势实现</strong>、<strong>综合交互</strong>、<strong>设备能力 + 排错</strong>。允许使用 AI，但每一关都有“必须讲得清”的验收点。</p>
+
+      <div class="lwj_tasks">
+        <a class="lwj_task" href="mobile-detective.html">
+          <div class="lwj_task-top">
+            <h3>任务一 · 事件侦探</h3>
+            <span class="lwj_task-stars">⭐</span>
+          </div>
+          <p>对探针区依次做单击 / 向上拖动 / 向左快速滑 / 双指触摸 / 长按后抬起，记录事件触发顺序，并画出轨迹草图。</p>
+          <div class="lwj_task-tags">
+            <span>观察 · 记录</span><span>changedTouches</span><span>事件顺序</span>
+          </div>
+          <span class="lwj_task-go">打开记录页 →</span>
+        </a>
+
+        <a class="lwj_task" href="mobile-gesture.html">
+          <div class="lwj_task-top">
+            <h3>任务二 · 手势卡片</h3>
+            <span class="lwj_task-stars">⭐⭐</span>
+          </div>
+          <p>中华美食卡片 4 道菜，左右滑动切换，边界提示，0.3s 过渡动画，300ms 冷却防止一次跳两张。</p>
+          <div class="lwj_task-tags">
+            <span>阈值 40px</span><span>touch-action: pan-y</span><span>冷却时间</span>
+          </div>
+          <span class="lwj_task-go">打开作业 →</span>
+        </a>
+
+        <a class="lwj_task" href="mobile-zoom.html">
+          <div class="lwj_task-top">
+            <h3>任务三 · 图片查看器</h3>
+            <span class="lwj_task-stars">⭐⭐⭐</span>
+          </div>
+          <p>双指缩放 1x～4x、双击在 1x/2x 切换、放大后单指拖动，缩回 1x 自动居中，缩放以两指中点为基准。</p>
+          <div class="lwj_task-tags">
+            <span>多指手势</span><span>transform</span><span>边界限制</span>
+          </div>
+          <span class="lwj_task-go">打开作业 →</span>
+        </a>
+
+        <a class="lwj_task" href="mobile-sensor.html">
+          <div class="lwj_task-top">
+            <h3>任务四 · 摇一摇彩蛋</h3>
+            <span class="lwj_task-stars">⭐⭐⭐⭐</span>
+          </div>
+          <p>摇一摇手机抽取今日菜谱：devicemotion 合成加速度、阈值 18、1.5s 冷却，并准备“设备不支持”的降级按钮。</p>
+          <div class="lwj_task-tags">
+            <span>设备传感器</span><span>权限申请</span><span>降级方案</span>
+          </div>
+          <span class="lwj_task-go">打开作业 →</span>
+        </a>
+      </div>
+
+      <p>🧭 <strong>提交要求：</strong>4 个任务按星级选做（至少完成 ⭐⭐ 两关），提交时附上①运行截图（手机或设备模式）②遇到的一个坑与解决办法 ③本次使用的 AI 提示词记录。</p>
+    </section>
+
+    <!-- ====== 8 评分与答辩 ====== -->
+    <section class="lwj_section">
+      <div class="lwj_section-head">
+        <span class="lwj_num">8</span>
+        <h2>评分维度与现场答辩<small>不只看得分，更看讲得清</small></h2>
+      </div>
+
+      <div class="lwj_table-wrap">
+        <table>
+          <thead><tr><th>维度</th><th>分值</th><th>评分要点</th></tr></thead>
+          <tbody>
+            <tr><td>事件理解</td><td>25</td><td>能说出四个触摸事件的触发时机、touches 三个列表的差别、为什么抬手用 changedTouches</td></tr>
+            <tr><td>手势实现</td><td>30</td><td>阈值、方向判断、冷却时间是否合理；边界与误触处理是否到位</td></tr>
+            <tr><td>移动端体验</td><td>20</td><td>是否跟手、有无页面误滚动、是否有过渡动画、横竖屏与不同尺寸是否正常</td></tr>
+            <tr><td>降级与排错</td><td>15</td><td>不支持传感器 / 无权限时是否有友好提示；控制台无报错</td></tr>
+            <tr><td>规范与记录</td><td>10</td><td>命名前缀、文件头信息、AI 提示词记录、注释是否清晰</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>🎤 <strong>现场答辩（随机抽 3 问）：</strong><br>
+        ① 为什么 <code>touchend</code> 里要用 <code>changedTouches[0]</code>？<br>
+        ② 你的滑动阈值设为多少？设成 5px 会怎样？<br>
+        ③ 双指缩放时怎么保证图片不“跳”？<br>
+        ④ 页面加了 <code>touch-action:none</code> 之后发生了什么变化？<br>
+        ⑤ 手机上没有传感器数据时，你的代码会怎么走？
+      </p>
+
+      <p>⚠️ <strong>常见扣分点：</strong>只监听 click（滑动完全无反应）、不写 touchcancel（接个电话回来状态卡死）、用 hover 做移动端交互、缩放时忘记 <code>preventDefault</code> 导致整页跟着放大。</p>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="lwj_footer">
+      <p class="lwj_footer-quote">手指的“话”比想象中多：按下、移动、抬起、几根手指、往哪走——都要自己接管</p>
+      <p>高级网页设计 · 移动端事件课堂案例 · 2026-2027-1</p>
+      <p style="margin-top:8px;"><a href="../index.html">← 返回作品集首页</a></p>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * 移动端触摸交互课程页
+     * @desc 实现事件探针、滑动方向识别、长按与双击三个演示，桌面端自动降级为鼠标模拟
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    (function () {
+      'use strict';
+
+      var lwj_hasTouch = 'ontouchstart' in window;
+
+      /* =========================================================
+         演示一：事件探针
+         ========================================================= */
+      var lwj_probe = document.getElementById('lwj_probe');
+      var lwj_probeDot = document.getElementById('lwj_probe_dot');
+      var lwj_probeMode = document.getElementById('lwj_probe_mode');
+      var lwj_log = document.getElementById('lwj_log');
+      var lwj_moveCountEl = document.getElementById('lwj_move_count');
+      var lwj_moveTotal = 0;
+      var lwj_logEmpty = lwj_log.querySelector('.lwj_log-empty');
+
+      lwj_probeMode.textContent = lwj_hasTouch ? '触摸模式' : '鼠标模拟模式';
+
+      /**
+       * 追加一条事件日志
+       * @desc 把一次事件的名字、坐标和手指数量写入探针日志区，并自动滚动到最新一条
+       * @param {string} lwj_name - 事件名，例如 touchstart
+       * @param {string} lwj_detail - 补充说明，例如坐标或手指数量
+       * @param {string} lwj_kind - 日志类型（start / move / end / click / cancel），决定左侧色条颜色
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_appendLog(lwj_name, lwj_detail, lwj_kind) {
+        if (lwj_logEmpty) { lwj_logEmpty.remove(); lwj_logEmpty = null; }
+        var lwj_item = document.createElement('div');
+        lwj_item.className = 'lwj_log-item lwj_log-item--' + lwj_kind;
+        lwj_item.innerHTML = '<span class="lwj_log-name">' + lwj_name + '</span>' +
+                             '<span class="lwj_log-detail">' + lwj_detail + '</span>';
+        lwj_log.appendChild(lwj_item);
+        lwj_log.scrollTop = lwj_log.scrollHeight;
+        while (lwj_log.children.length > 60) { lwj_log.removeChild(lwj_log.firstChild); }
+      }
+
+      /**
+       * 把光点移到手指位置
+       * @desc 用 clientX 减去探针左边界，换算出容器内坐标，避免使用 offsetX 在子元素上取错
+       * @param {number} lwj_x - 相对视口的横坐标
+       * @param {number} lwj_y - 相对视口的纵坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_moveDot(lwj_x, lwj_y) {
+        var lwj_rect = lwj_probe.getBoundingClientRect();
+        lwj_probeDot.style.left = (lwj_x - lwj_rect.left) + 'px';
+        lwj_probeDot.style.top = (lwj_y - lwj_rect.top) + 'px';
+        lwj_probeDot.classList.add('is-on');
+      }
+
+      /**
+       * 更新本次手势的 touchmove 次数
+       * @desc 把计数同步到页面文字上，用于观察“移动距离越大、move 次数越多”
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_refreshMoveCount() {
+        lwj_moveCountEl.textContent = lwj_moveTotal;
+      }
+
+      if (lwj_hasTouch) {
+        lwj_probe.addEventListener('touchstart', function (e) {
+          var lwj_t = e.touches[0];
+          lwj_moveTotal = 0;
+          lwj_refreshMoveCount();
+          lwj_appendLog('touchstart', 'x ' + Math.round(lwj_t.clientX) + ' · y ' + Math.round(lwj_t.clientY) + ' · 手指 ' + e.touches.length, 'start');
+          lwj_moveDot(lwj_t.clientX, lwj_t.clientY);
+        }, { passive: true });
+
+        lwj_probe.addEventListener('touchmove', function (e) {
+          var lwj_t = e.touches[0];
+          lwj_moveTotal++;
+          lwj_refreshMoveCount();
+          lwj_appendLog('touchmove', 'x ' + Math.round(lwj_t.clientX) + ' · y ' + Math.round(lwj_t.clientY), 'move');
+          lwj_moveDot(lwj_t.clientX, lwj_t.clientY);
+        }, { passive: true });
+
+        lwj_probe.addEventListener('touchend', function (e) {
+          var lwj_t = e.changedTouches[0];
+          lwj_appendLog('touchend', 'x ' + Math.round(lwj_t.clientX) + ' · y ' + Math.round(lwj_t.clientY) + ' · 本次 move ' + lwj_moveTotal + ' 次', 'end');
+        }, { passive: true });
+
+        lwj_probe.addEventListener('touchcancel', function () {
+          lwj_appendLog('touchcancel', '被系统打断，记得清理状态', 'cancel');
+        }, { passive: true });
+      } else {
+        var lwj_mouseDown = false;
+        lwj_probe.addEventListener('mousedown', function (e) {
+          lwj_mouseDown = true;
+          lwj_moveTotal = 0;
+          lwj_refreshMoveCount();
+          lwj_appendLog('touchstart', '鼠标模拟 · x ' + Math.round(e.clientX) + ' · y ' + Math.round(e.clientY), 'start');
+          lwj_moveDot(e.clientX, e.clientY);
+        });
+        lwj_probe.addEventListener('mousemove', function (e) {
+          if (!lwj_mouseDown) { return; }
+          lwj_moveTotal++;
+          lwj_refreshMoveCount();
+          lwj_appendLog('touchmove', '鼠标模拟 · x ' + Math.round(e.clientX) + ' · y ' + Math.round(e.clientY), 'move');
+          lwj_moveDot(e.clientX, e.clientY);
+        });
+        document.addEventListener('mouseup', function (e) {
+          if (!lwj_mouseDown) { return; }
+          lwj_mouseDown = false;
+          lwj_appendLog('touchend', '鼠标模拟 · 本次 move ' + lwj_moveTotal + ' 次', 'end');
+        });
+      }
+
+      lwj_probe.addEventListener('click', function (e) {
+        lwj_appendLog('click', 'x ' + Math.round(e.clientX) + ' · y ' + Math.round(e.clientY) + ' · 注意它在 touchend 之后', 'click');
+      });
+
+      document.getElementById('lwj_clear_log').addEventListener('click', function () {
+        lwj_log.innerHTML = '<p class="lwj_log-empty">等待你的下一次触摸……</p>';
+        lwj_logEmpty = lwj_log.querySelector('.lwj_log-empty');
+        lwj_probeDot.classList.remove('is-on');
+      });
+
+      /* =========================================================
+         演示二：滑动识别器
+         ========================================================= */
+      var lwj_swipe = document.getElementById('lwj_swipe');
+      var lwj_swipeCore = document.getElementById('lwj_swipe_core');
+      var lwj_swipeDir = document.getElementById('lwj_swipe_dir');
+      var lwj_swipeDxEl = document.getElementById('lwj_swipe_dx');
+      var lwj_swipeDyEl = document.getElementById('lwj_swipe_dy');
+      var lwj_swipeStartX = 0;
+      var lwj_swipeStartY = 0;
+
+      /**
+       * 判断滑动方向
+       * @desc 用位移绝对值与 30px 阈值比较，先排除误触，再“谁大听谁的”判断轴向
+       * @param {number} lwj_dx - 横向位移
+       * @param {number} lwj_dy - 纵向位移
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_judgeSwipe(lwj_dx, lwj_dy) {
+        var lwj_line = 30;
+        lwj_swipeDxEl.textContent = Math.round(lwj_dx) + ' px';
+        lwj_swipeDyEl.textContent = Math.round(lwj_dy) + ' px';
+        lwj_swipeCore.style.transform = 'translate(' + Math.max(-40, Math.min(40, lwj_dx / 2)) + 'px, ' +
+                                          Math.max(-30, Math.min(30, lwj_dy / 2)) + 'px)';
+        setTimeout(function () { lwj_swipeCore.style.transform = 'translate(0, 0)'; }, 200);
+
+        if (Math.abs(lwj_dx) < lwj_line && Math.abs(lwj_dy) < lwj_line) {
+          lwj_swipeDir.textContent = '这是一次点击（未达到 30px）';
+          lwj_swipeDir.style.color = 'var(--lwj_muted)';
+          lwj_swipeCore.textContent = '·';
+          return;
+        }
+
+        var lwj_dirText;
+        if (Math.abs(lwj_dx) > Math.abs(lwj_dy)) {
+          lwj_dirText = lwj_dx > 0 ? '向右滑 →' : '← 向左滑';
+          lwj_swipeCore.textContent = lwj_dx > 0 ? '→' : '←';
+        } else {
+          lwj_dirText = lwj_dy > 0 ? '向下滑 ↓' : '↑ 向上滑';
+          lwj_swipeCore.textContent = lwj_dy > 0 ? '↓' : '↑';
+        }
+        lwj_swipeDir.textContent = lwj_dirText;
+        lwj_swipeDir.style.color = 'var(--lwj_lime)';
+      }
+
+      if (lwj_hasTouch) {
+        lwj_swipe.addEventListener('touchstart', function (e) {
+          var lwj_t = e.touches[0];
+          lwj_swipeStartX = lwj_t.clientX;
+          lwj_swipeStartY = lwj_t.clientY;
+        }, { passive: true });
+
+        lwj_swipe.addEventListener('touchend', function (e) {
+          var lwj_t = e.changedTouches[0];
+          lwj_judgeSwipe(lwj_t.clientX - lwj_swipeStartX, lwj_t.clientY - lwj_swipeStartY);
+        }, { passive: true });
+      } else {
+        var lwj_swipeDown = false;
+        lwj_swipe.addEventListener('mousedown', function (e) {
+          lwj_swipeDown = true;
+          lwj_swipeStartX = e.clientX;
+          lwj_swipeStartY = e.clientY;
+        });
+        document.addEventListener('mouseup', function (e) {
+          if (!lwj_swipeDown) { return; }
+          lwj_swipeDown = false;
+          lwj_judgeSwipe(e.clientX - lwj_swipeStartX, e.clientY - lwj_swipeStartY);
+        });
+      }
+
+      /* =========================================================
+         演示三：长按与双击
+         ========================================================= */
+      var lwj_tap = document.getElementById('lwj_tap');
+      var lwj_tapResult = document.getElementById('lwj_tap_result');
+      var lwj_tapTimer = null;
+      var lwj_lastTap = 0;
+      var lwj_holdFired = false;
+
+      /**
+       * 显示测试结果
+       * @desc 长按 / 双击 / 单击共用同一块结果文案，并给出颜色区分
+       * @param {string} lwj_text - 结果文案
+       * @param {boolean} lwj_ok - 是否命中长按或双击
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_showTapResult(lwj_text, lwj_ok) {
+        lwj_tapResult.textContent = lwj_text;
+        lwj_tapResult.style.color = lwj_ok ? 'var(--lwj_lime)' : 'var(--lwj_red)';
+      }
+
+      /**
+       * 开始一次按压
+       * @desc 按下时启动 600ms 定时器，触发即判定长按；同时给方块加缩放反馈
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_tapStart() {
+        lwj_holdFired = false;
+        lwj_tap.classList.add('is-hold');
+        lwj_tapTimer = setTimeout(function () {
+          lwj_holdFired = true;
+          lwj_tap.classList.remove('is-hold');
+          lwj_showTapResult('长按触发（600ms）', true);
+        }, 600);
+      }
+
+      /**
+       * 结束一次按压
+       * @desc 抬手先取消长按定时器，再按 300ms 间隔判断双击，命中后重置时间戳避免三击算两次
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_tapEnd() {
+        clearTimeout(lwj_tapTimer);
+        lwj_tap.classList.remove('is-hold');
+        if (lwj_holdFired) { return; }
+
+        var lwj_now = Date.now();
+        if (lwj_now - lwj_lastTap < 300) {
+          lwj_showTapResult('双击触发（间隔 < 300ms）', true);
+          lwj_lastTap = 0;
+        } else {
+          lwj_showTapResult('单击（再快速点一下试试双击）', false);
+          lwj_lastTap = lwj_now;
+        }
+      }
+
+      if (lwj_hasTouch) {
+        lwj_tap.addEventListener('touchstart', lwj_tapStart, { passive: true });
+        lwj_tap.addEventListener('touchend', lwj_tapEnd, { passive: true });
+        lwj_tap.addEventListener('touchcancel', function () {
+          clearTimeout(lwj_tapTimer);
+          lwj_tap.classList.remove('is-hold');
+        }, { passive: true });
+      } else {
+        lwj_tap.addEventListener('mousedown', lwj_tapStart);
+        lwj_tap.addEventListener('mouseup', lwj_tapEnd);
+        lwj_tap.addEventListener('mouseleave', function () {
+          clearTimeout(lwj_tapTimer);
+          lwj_tap.classList.remove('is-hold');
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
