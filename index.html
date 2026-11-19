@@ -114,6 +114,7 @@
     .lwj_badge--lu { background: linear-gradient(150deg, #1f97b8, #0f5468); }
     .lwj_badge--game { background: linear-gradient(150deg, #b04a8f, #6d2454); }
     .lwj_badge--mobile { background: linear-gradient(150deg, #9ecb3f, #4c7a1f); }
+    .lwj_badge--fs { background: linear-gradient(150deg, #5b3fff, #1e40af); }
 
     .lwj_card h2 {
       font-size: 25px;
@@ -155,6 +156,7 @@
     .lwj_tags--lu span { background: #e6f6fa; color: #116b84; }
     .lwj_tags--game span { background: #fbeaf3; color: #8f3a6b; }
     .lwj_tags--mobile span { background: #f1f8e5; color: #557a1c; }
+    .lwj_tags--fs span { background: #eef2ff; color: #3730a3; }
 
     .lwj_card-link {
       display: inline-flex;
@@ -173,6 +175,7 @@
     .lwj_card-link--lu { color: #116b84; }
     .lwj_card-link--game { color: #8f3a6b; }
     .lwj_card-link--mobile { color: #4c7a1f; }
+    .lwj_card-link--fs { color: #3730a3; }
     .lwj_card-link:hover { text-decoration: underline; }
 
     /* ====== 页脚 ====== */
@@ -202,7 +205,7 @@
       </div>
       <h1>课堂作品集</h1>
       <p>高级网页设计 · 2026-2027-1 · 李汶静</p>
-      <div class="lwj_pill">Swiper · Tab · 图标 · 游戏 · 移动端</div>
+      <div class="lwj_pill">Swiper · Tab · 图标 · 游戏 · 移动端 · 全栈后端</div>
     </header>
 
     <!-- ====== 作品卡片 ====== -->
@@ -348,6 +351,25 @@
           <span>devicemotion</span>
         </div>
         <a href="mobile/index.html" class="lwj_card-link lwj_card-link--mobile">打开项目 →</a>
+      </section>
+
+      <!-- 作品九：全栈健康管理系统 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--fs">FS</div>
+        <h2>全栈健康管理系统</h2>
+        <div class="lwj_card-sub">后端项目 · Express + MySQL</div>
+        <p class="lwj_card-desc">
+          课程全栈项目：Express 提供 RESTful /api 接口并托管 frontend 静态资源，
+          MySQL 持久化健康数据；接口使用统一 JSON 响应格式，端口 8030，
+          内置健康检查端点 `/api/health`。
+        </p>
+        <div class="lwj_tags lwj_tags--fs">
+          <span>Node.js</span>
+          <span>Express</span>
+          <span>MySQL</span>
+          <span>RESTful API</span>
+        </div>
+        <a href="frontend/index.html" class="lwj_card-link lwj_card-link--fs">打开项目 →</a>
       </section>
 
     </main>
