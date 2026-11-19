@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: lwj-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node app.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://lwj30.github.io,https://lwj30.github.io/*
+      # === PlanetScale 连接串部署时手动填入 ===
+      # - key: DATABASE_URL
+      #   value: mysql://user:password@host:port/database?sslaccept=strict

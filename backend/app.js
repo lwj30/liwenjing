@@ -7,9 +7,13 @@ const lwj_cors = require('cors');
 require('dotenv').config({ path: lwj_path.join(__dirname, '.env') });
 
 const lwj_app = lwj_express();
-const lwj_PORT = 8030;
+const lwj_PORT = process.env.PORT || 8030;
 
-lwj_app.use(lwj_cors());
+// Render 云端从 process.env.PORT 读取；本地 fallback 到 8030
+const lwj_corsOrigin = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+  : '*';
+lwj_app.use(lwj_cors({ origin: lwj_corsOrigin }));
 lwj_app.use(lwj_express.json());
 lwj_app.use(lwj_express.static(lwj_path.join(__dirname, '..', 'frontend')));
 
