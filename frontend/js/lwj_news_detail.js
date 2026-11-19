@@ -7,7 +7,7 @@
   const lwj_message = document.getElementById('lwj_detail_message');
   const lwj_params = new URLSearchParams(window.location.search);
   const lwj_id = lwj_params.get('id');
-  const lwj_apiUrl = window.location.origin + '/api/news/' + encodeURIComponent(lwj_id || '');
+  const lwj_apiUrl = window.lwj_getApiUrl('/api/news/' + encodeURIComponent(lwj_id || ''));
 
   lwj_apiLink.href = lwj_apiUrl;
   lwj_apiLink.textContent = lwj_apiUrl;

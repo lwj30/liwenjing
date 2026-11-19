@@ -78,3 +78,11 @@
 - 提示词全文：
 
 @image:C:\Users\25672\AppData\Local\Temp\image.a8e1223451.png  这个科技新闻列表打不开
+
+## 记录 10
+
+- 时间：2026-11-19
+- 大模型名称：Tencent Hunyuan Hy
+- 提示词全文：
+
+@image:C:\Users\25672\AppData\Local\Temp\image.2742958f4a.png

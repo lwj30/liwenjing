@@ -5,7 +5,7 @@
   const lwj_apiLink = document.getElementById('lwj_gallery_api_link');
   const lwj_list = document.getElementById('lwj_gallery_list');
   const lwj_message = document.getElementById('lwj_gallery_message');
-  const lwj_apiUrl = window.location.origin + '/api/gallery';
+  const lwj_apiUrl = window.lwj_getApiUrl('/api/gallery');
 
   lwj_apiLink.href = lwj_apiUrl;
   lwj_apiLink.textContent = lwj_apiUrl;
