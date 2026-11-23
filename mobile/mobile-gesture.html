@@ -1,0 +1,479 @@
+﻿<!--
+  作者：李汶静
+  创建时间：2026-11-16 14:20
+  使用模型：DeepSeek-V4.1-Flash
+  功能：移动端任务二「手势卡片」，4 道中华美食卡片左右滑动切换，含 40px 阈值、300ms 冷却、边界提示与 0.3s 过渡动画。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务二 · 手势卡片 | 移动端触摸交互</title>
+  <link rel="stylesheet" href="../cdn/fonts/fonts.css">
+  <style>
+    :root {
+      --lwj_bg: #0a0810;
+      --lwj_panel: #141020;
+      --lwj_line: rgba(255, 255, 255, 0.09);
+      --lwj_text: #edeaf5;
+      --lwj_muted: #948da9;
+      --lwj_lime: #c8f24d;
+      --lwj_violet: #8b6cff;
+      --lwj_red: #ff6b5e;
+      --lwj_mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(900px 480px at 50% -6%, rgba(255, 150, 90, 0.16), transparent 70%),
+        var(--lwj_bg);
+      color: var(--lwj_text);
+      line-height: 1.7;
+      min-height: 100vh;
+      padding-bottom: 48px;
+    }
+    .lwj_wrap { max-width: 560px; margin: 0 auto; padding: 0 18px; }
+
+    /* 返回条 */
+    .lwj_topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 0 4px; font-size: 12.5px; color: var(--lwj_muted);
+    }
+    .lwj_topbar a {
+      color: var(--lwj_muted); text-decoration: none; border: 1px solid var(--lwj_line);
+      border-radius: 999px; padding: 5px 12px; transition: color 0.2s, border-color 0.2s;
+    }
+    .lwj_topbar a:hover { color: var(--lwj_lime); border-color: rgba(200, 242, 77, 0.5); }
+
+    /* 页头 */
+    .lwj_hero { padding: 18px 0 18px; text-align: center; }
+    .lwj_hero h1 {
+      font-size: clamp(24px, 7vw, 32px); letter-spacing: 0.04em;
+      background: linear-gradient(100deg, #fff, #ffd7a8 55%, var(--lwj_lime));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .lwj_hero p { font-size: 13.5px; color: #c9c3d9; margin-top: 8px; }
+    .lwj_hero code {
+      font-family: var(--lwj_mono); font-size: 11.5px;
+      background: rgba(139, 108, 255, 0.16); border: 1px solid rgba(139, 108, 255, 0.3);
+      border-radius: 5px; padding: 1px 5px; color: #d9d0ff;
+    }
+
+    /* 卡片区：pan-y 保证纵向仍可滚动页面 */
+    .lwj_stage {
+      position: relative;
+      height: 420px;
+      margin: 6px 0 16px;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .lwj_card {
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      padding: 26px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(0) scale(0.86);
+      transition: transform 0.3s cubic-bezier(0.22, 0.9, 0.32, 1), opacity 0.3s ease;
+      will-change: transform, opacity;
+      box-shadow: 0 22px 44px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .lwj_card::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.55) 100%);
+      pointer-events: none;
+    }
+    .lwj_card.is-active { opacity: 1; transform: translateX(0) scale(1); z-index: 3; }
+    .lwj_card.is-prev { opacity: 0.4; transform: translateX(-13%) scale(0.9); z-index: 2; }
+    .lwj_card.is-next { opacity: 0.4; transform: translateX(13%) scale(0.9); z-index: 2; }
+
+    .lwj_card-art {
+      position: absolute; top: 26px; right: 20px;
+      font-size: 104px; line-height: 1;
+      filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.45));
+      opacity: 0.95;
+    }
+    .lwj_card-order {
+      font-family: var(--lwj_mono); font-size: 12px; letter-spacing: 0.22em;
+      color: rgba(255, 255, 255, 0.75); margin-bottom: 6px;
+      position: relative; z-index: 1;
+    }
+    .lwj_card h2 {
+      position: relative; z-index: 1;
+      font-size: clamp(26px, 7vw, 34px); letter-spacing: 0.06em;
+      color: #fff; text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+    .lwj_card-tag {
+      position: relative; z-index: 1;
+      display: inline-block; margin: 8px 0 10px;
+      font-size: 11.5px; color: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.45); border-radius: 999px;
+      padding: 2px 10px; backdrop-filter: blur(2px);
+    }
+    .lwj_card p {
+      position: relative; z-index: 1;
+      font-size: 13.5px; color: rgba(255, 255, 255, 0.86); line-height: 1.75;
+    }
+
+    /* 卡片配色 */
+    .lwj_card--1 { background: linear-gradient(150deg, #b3341f, #7a2318 55%, #2b1512); }
+    .lwj_card--2 { background: linear-gradient(150deg, #166d63, #0f4a52 55%, #10222f); }
+    .lwj_card--3 { background: linear-gradient(150deg, #a8456b, #6a2a52 55%, #241326); }
+    .lwj_card--4 { background: linear-gradient(150deg, #c2451f, #8a1f1f 55%, #2d0f0f); }
+
+    /* 指示器 */
+    .lwj_indicator {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 26px;
+    }
+    .lwj_dot {
+      width: 7px; height: 7px; border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+      transition: width 0.3s, background 0.3s;
+    }
+    .lwj_dot.is-active { width: 22px; background: var(--lwj_lime); }
+
+    .lwj_counter {
+      text-align: center; margin-top: 10px;
+      font-family: var(--lwj_mono); font-size: 12.5px; color: var(--lwj_muted);
+      letter-spacing: 0.08em;
+    }
+    .lwj_counter b { color: #fff; font-weight: 500; }
+
+    /* 提示 toast */
+    .lwj_toast {
+      margin: 14px auto 0; max-width: 300px;
+      text-align: center; font-size: 12.5px;
+      color: #ffd7a8; padding: 0 0 2px;
+      min-height: 20px; transition: opacity 0.25s;
+    }
+    .lwj_toast.is-hidden { opacity: 0; }
+
+    /* 验收说明 */
+    .lwj_notes {
+      margin-top: 26px; padding: 16px;
+      border: 1px solid var(--lwj_line); border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+    .lwj_notes h2 { font-size: 14px; margin-bottom: 8px; color: #fff; }
+    .lwj_notes ul { list-style: none; display: grid; gap: 6px; }
+    .lwj_notes li {
+      font-size: 12.5px; color: #a9a2bf; padding-left: 18px; position: relative;
+    }
+    .lwj_notes li::before {
+      content: "▸"; position: absolute; left: 0; color: var(--lwj_lime);
+    }
+    .lwj_notes code {
+      font-family: var(--lwj_mono); font-size: 11.5px; color: #d9d0ff;
+    }
+
+    /* 页脚 */
+    .lwj_footer {
+      margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--lwj_line);
+      text-align: center; font-size: 12px; color: #6f6885;
+    }
+    .lwj_footer a { color: var(--lwj_lime); text-decoration: none; }
+    .lwj_footer p + p { margin-top: 6px; }
+
+    @media (max-height: 700px) {
+      .lwj_stage { height: 360px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lwj_card { transition-duration: 0.001s; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lwj_wrap">
+    <div class="lwj_topbar">
+      <span>任务二 · 手势识别</span>
+      <a href="index.html">← 返回课程</a>
+    </div>
+
+    <header class="lwj_hero">
+      <h1>中华美食 · 手势卡片</h1>
+      <p>在卡片上<strong>左右滑动</strong>切换，阈值 <code>40px</code>，冷却 <code>300ms</code></p>
+    </header>
+
+    <div class="lwj_stage" id="lwj_stage">
+      <article class="lwj_card lwj_card--1" data-index="0">
+        <span class="lwj_card-art">🦆</span>
+        <span class="lwj_card-order">NO.01 · 京</span>
+        <h2>北京烤鸭</h2>
+        <span class="lwj_card-tag">果木炭火 · 皮脆肉嫩</span>
+        <p>挂炉烤制，鸭皮呈枣红色，片好后配荷叶饼、甜面酱与葱丝卷食，一口下去先脆后香。</p>
+      </article>
+
+      <article class="lwj_card lwj_card--2" data-index="1">
+        <span class="lwj_card-art">🍜</span>
+        <span class="lwj_card-order">NO.02 · 陇</span>
+        <h2>兰州牛肉面</h2>
+        <span class="lwj_card-tag">一清二白三红四绿</span>
+        <p>清汤为底，萝卜片雪白，辣油鲜红，香菜蒜苗翠绿。面条现拉，毛细到大宽任选，讲究汤清味浓。</p>
+      </article>
+
+      <article class="lwj_card lwj_card--3" data-index="2">
+        <span class="lwj_card-art">🥟</span>
+        <span class="lwj_card-order">NO.03 · 粤</span>
+        <h2>广式虾饺</h2>
+        <span class="lwj_card-tag">澄面薄皮 · 十三褶</span>
+        <p>澄面与生粉烫制的水晶皮包裹鲜虾，捏出十三道褶，蒸熟后皮薄透亮，咬开弹牙带汁。</p>
+      </article>
+
+      <article class="lwj_card lwj_card--4" data-index="3">
+        <span class="lwj_card-art">🌶️</span>
+        <span class="lwj_card-order">NO.04 · 蜀</span>
+        <h2>四川火锅</h2>
+        <span class="lwj_card-tag">牛油九宫格 · 麻辣鲜香</span>
+        <p>牛油与郫县豆瓣炒香打底，配花椒干辣椒熬出红汤，毛肚七上八下，鸭肠一烫即起。</p>
+      </article>
+    </div>
+
+    <div class="lwj_indicator" id="lwj_indicator">
+      <span class="lwj_dot is-active"></span>
+      <span class="lwj_dot"></span>
+      <span class="lwj_dot"></span>
+      <span class="lwj_dot"></span>
+    </div>
+    <p class="lwj_counter">第 <b id="lwj_current">1</b> / <b id="lwj_total">4</b> 张</p>
+    <p class="lwj_toast is-hidden" id="lwj_toast"></p>
+
+    <section class="lwj_notes">
+      <h2>验收点自查</h2>
+      <ul>
+        <li>短距离误触（&lt; 40px）不会切换，松手后卡片回弹原位</li>
+        <li>连续快速滑动时 300ms 内只响应一次，不会一次跳两张</li>
+        <li>容器使用 <code>touch-action: pan-y</code>，纵向仍可正常滚动页面</li>
+        <li>左右边界分别提示“已经是第一张 / 最后一张”</li>
+        <li>切换过渡 0.3s，拖动时卡片跟手并带轻微倾斜</li>
+      </ul>
+    </section>
+
+    <footer class="lwj_footer">
+      <p>李汶静 · 学号 20260101 · 高级网页设计移动端作业</p>
+      <p><a href="index.html">← 返回课程页</a> · <a href="../index.html">返回作品集首页 →</a></p>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * 任务二：手势卡片
+     * @desc 用 touchstart / touchend 计算横向位移，实现 4 张美食卡片的左右滑动切换、边界提示与冷却防连滑
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    (function () {
+      'use strict';
+
+      var LWJ_THRESHOLD = 40;   // 触发切换的最小横向位移（px）
+      var LWJ_COOLDOWN = 300;   // 冷却时间（ms），防止一次连滑跳两张
+      var LWJ_ANIMATION = 300;  // 与 CSS 过渡时长保持一致
+
+      var lwj_stage = document.getElementById('lwj_stage');
+      var lwj_cards = Array.prototype.slice.call(lwj_stage.querySelectorAll('.lwj_card'));
+      var lwj_dots = Array.prototype.slice.call(document.querySelectorAll('.lwj_dot'));
+      var lwj_currentEl = document.getElementById('lwj_current');
+      var lwj_totalEl = document.getElementById('lwj_total');
+      var lwj_toast = document.getElementById('lwj_toast');
+
+      var lwj_index = 0;
+      var lwj_startX = 0;
+      var lwj_startY = 0;
+      var lwj_isDragging = false;
+      var lwj_isLocked = false;   // 冷却锁
+      var lwj_toastTimer = null;
+
+      lwj_totalEl.textContent = lwj_cards.length;
+
+      /**
+       * 按当前下标刷新卡片位置与指示器
+       * @desc 把每张卡片标记为 is-active / is-prev / is-next，交给 CSS 过渡完成动画
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_render() {
+        lwj_cards.forEach(function (lwj_card, lwj_i) {
+          lwj_card.classList.remove('is-active', 'is-prev', 'is-next');
+          lwj_card.style.transform = '';
+          lwj_card.style.transition = '';
+          if (lwj_i === lwj_index) {
+            lwj_card.classList.add('is-active');
+          } else if (lwj_i === lwj_index - 1) {
+            lwj_card.classList.add('is-prev');
+          } else if (lwj_i === lwj_index + 1) {
+            lwj_card.classList.add('is-next');
+          }
+        });
+
+        lwj_dots.forEach(function (lwj_dot, lwj_i) {
+          lwj_dot.classList.toggle('is-active', lwj_i === lwj_index);
+        });
+        lwj_currentEl.textContent = lwj_index + 1;
+      }
+
+      /**
+       * 显示顶部提示
+       * @desc 边界提示等短文案显示 1.4s 后自动淡出
+       * @param {string} lwj_text - 提示文案
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_showToast(lwj_text) {
+        lwj_toast.textContent = lwj_text;
+        lwj_toast.classList.remove('is-hidden');
+        clearTimeout(lwj_toastTimer);
+        lwj_toastTimer = setTimeout(function () {
+          lwj_toast.classList.add('is-hidden');
+        }, 1400);
+      }
+
+      /**
+       * 切换卡片
+       * @desc 上/下一张越界时只提示不切换；正常切换后启动 300ms 冷却锁
+       * @param {number} lwj_dir - 1 表示下一张，-1 表示上一张
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_switchCard(lwj_dir) {
+        if (lwj_isLocked) { return; }
+
+        var lwj_next = lwj_index + lwj_dir;
+        if (lwj_next < 0) {
+          lwj_showToast('已经是第一张了');
+          lwj_render();
+          return;
+        }
+        if (lwj_next > lwj_cards.length - 1) {
+          lwj_showToast('已经是最后一张了');
+          lwj_render();
+          return;
+        }
+
+        lwj_index = lwj_next;
+        lwj_render();
+        lwj_isLocked = true;
+        setTimeout(function () {
+          lwj_isLocked = false;
+        }, LWJ_COOLDOWN);
+      }
+
+      /**
+       * 开始拖动
+       * @desc 记录起点并关闭过渡，让卡片能即时跟手
+       * @param {number} lwj_x - 视口横坐标
+       * @param {number} lwj_y - 视口纵坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_startDrag(lwj_x, lwj_y) {
+        if (lwj_isLocked) { return; }
+        lwj_startX = lwj_x;
+        lwj_startY = lwj_y;
+        lwj_isDragging = true;
+        lwj_cards[lwj_index].style.transition = 'none';
+      }
+
+      /**
+       * 拖动中跟随手指
+       * @desc 横向位移映射为 translateX 与轻微旋转，纵向为主时放弃拖动（交给页面滚动）
+       * @param {number} lwj_x - 视口横坐标
+       * @param {number} lwj_y - 视口纵坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_moveDrag(lwj_x, lwj_y) {
+        if (!lwj_isDragging) { return; }
+        var lwj_dx = lwj_x - lwj_startX;
+        var lwj_dy = lwj_y - lwj_startY;
+
+        if (Math.abs(lwj_dy) > Math.abs(lwj_dx) && Math.abs(lwj_dy) > 12) {
+          lwj_isDragging = false;
+          lwj_render();
+          return;
+        }
+
+        var lwj_card = lwj_cards[lwj_index];
+        var lwj_offset = Math.max(-140, Math.min(140, lwj_dx));
+        lwj_card.style.transform = 'translateX(' + lwj_offset + 'px) rotate(' + (lwj_offset / 60) + 'deg)';
+      }
+
+      /**
+       * 结束拖动
+       * @desc 位移超过 40px 才切换，否则回弹；松手后恢复 CSS 过渡
+       * @param {number} lwj_x - 视口横坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_endDrag(lwj_x) {
+        if (!lwj_isDragging) { return; }
+        lwj_isDragging = false;
+
+        var lwj_dx = lwj_x - lwj_startX;
+        if (Math.abs(lwj_dx) < LWJ_THRESHOLD) {
+          lwj_render();
+          return;
+        }
+        // 左滑（dx < 0）看下一张，右滑看上一张
+        lwj_switchCard(lwj_dx < 0 ? 1 : -1);
+      }
+
+      if ('ontouchstart' in window) {
+        lwj_stage.addEventListener('touchstart', function (e) {
+          lwj_startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        lwj_stage.addEventListener('touchmove', function (e) {
+          lwj_moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        lwj_stage.addEventListener('touchend', function (e) {
+          lwj_endDrag(e.changedTouches[0].clientX);
+        }, { passive: true });
+
+        lwj_stage.addEventListener('touchcancel', function () {
+          lwj_isDragging = false;
+          lwj_render();
+        }, { passive: true });
+      } else {
+        var lwj_mouseDown = false;
+        lwj_stage.addEventListener('mousedown', function (e) {
+          lwj_mouseDown = true;
+          lwj_startDrag(e.clientX, e.clientY);
+        });
+        lwj_stage.addEventListener('mousemove', function (e) {
+          if (!lwj_mouseDown) { return; }
+          lwj_moveDrag(e.clientX, e.clientY);
+        });
+        document.addEventListener('mouseup', function (e) {
+          if (!lwj_mouseDown) { return; }
+          lwj_mouseDown = false;
+          lwj_endDrag(e.clientX);
+        });
+      }
+
+      lwj_render();
+      // 让过渡在首屏之后才生效，避免初始展开时四张卡一起飞入
+      setTimeout(function () {
+        lwj_cards.forEach(function (lwj_card) { lwj_card.style.transition = ''; });
+      }, LWJ_ANIMATION);
+    })();
+  </script>
+</body>
+</html>

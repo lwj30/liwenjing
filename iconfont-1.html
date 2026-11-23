@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Font Awesome · A Specimen</title>
+<link rel="stylesheet" href="cdn/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="cdn/fonts/fonts.css">
+<style>
+/* ============================================================
+   Design Tokens — Type Specimen
+   ============================================================ */
+:root {
+  --fa-ink:      #1A1612;   /* 墨色 */
+  --fa-paper:    #F5F0E6;   /* 纸色 */
+  --fa-rule:     #C9B99A;   /* 铜色细尺 */
+  --fa-accent:   #B8400E;   /* 朱红印 */
+  --fa-muted:    #7A6E5D;   /* 灰标签 */
+  --fa-shadow:   #3D352B;
+  --fa-mono:     'JetBrains Mono', ui-monospace, monospace;
+  --fa-display:  'IM Fell English', 'Noto Serif SC', Georgia, serif;
+  --fa-body:     'Noto Serif SC', Georgia, 'Times New Roman', serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--fa-paper);
+  color: var(--fa-ink);
+  font-family: var(--fa-body);
+  font-size: 15px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+/* 纸张纹理（极淡网点） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--fa-rule) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: .07;
+  z-index: 0;
+}
+
+.lwj_page {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 72px 56px 64px;
+}
+
+/* ------------------------------------------------------------
+   标本标题区
+   ------------------------------------------------------------ */
+.lwj_hero {
+  margin-bottom: 56px;
+}
+.lwj_hero-title {
+  font-family: var(--fa-display);
+  font-size: 64px;
+  font-weight: 400;
+  letter-spacing: -1px;
+  line-height: 1.05;
+  margin: 0 0 4px 0;
+  color: var(--fa-ink);
+}
+.lwj_hero-sub {
+  font-family: var(--fa-display);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--fa-muted);
+  margin: 0 0 28px 0;
+  font-weight: 400;
+}
+.lwj_hero-meta {
+  font-family: var(--fa-mono);
+  font-size: 12px;
+  letter-spacing: .06em;
+  color: var(--fa-muted);
+  border-top: 1px solid var(--fa-rule);
+  border-bottom: 1px solid var(--fa-rule);
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.lwj_hero-meta strong {
+  color: var(--fa-accent);
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   章节：细铜尺 + 居中标签
+   ------------------------------------------------------------ */
+.lwj_section {
+  margin-bottom: 48px;
+}
+.lwj_section-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.lwj_section-head::before,
+.lwj_section-head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--fa-rule);
+}
+.lwj_section-label {
+  font-family: var(--fa-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--fa-ink);
+  white-space: nowrap;
+}
+.lwj_section-label em {
+  font-family: var(--fa-mono);
+  font-style: normal;
+  font-size: 13px;
+  color: var(--fa-muted);
+  margin-left: 8px;
+  letter-spacing: .04em;
+}
+
+/* ------------------------------------------------------------
+   图标网格：标本卡
+   ------------------------------------------------------------ */
+.lwj_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 1px;
+  background: var(--fa-rule);
+  border: 1px solid var(--fa-rule);
+}
+.lwj_tile {
+  background: var(--fa-paper);
+  padding: 18px 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background .15s ease, color .15s ease;
+}
+.lwj_tile:hover {
+  background: var(--fa-ink);
+  color: var(--fa-paper);
+}
+.lwj_tile i {
+  font-size: 28px;
+  line-height: 1;
+}
+.lwj_tile-name {
+  font-family: var(--fa-mono);
+  font-size: 10.5px;
+  letter-spacing: .02em;
+  text-align: center;
+  color: var(--fa-muted);
+  max-width: 96%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lwj_tile:hover .lwj_tile-name {
+  color: var(--fa-rule);
+}
+
+/* 朱红注册标记（hover 时出现） */
+.lwj_tile::before {
+  content: "";
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 8px; height: 8px;
+  border-top: 1px solid var(--fa-accent);
+  border-left: 1px solid var(--fa-accent);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.lwj_tile::after {
+  content: "";
+  position: absolute;
+  bottom: 4px; right: 4px;
+  width: 8px; height: 8px;
+  border-bottom: 1px solid var(--fa-accent);
+  border-right: 1px solid var(--fa-accent);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.lwj_tile:hover::before,
+.lwj_tile:hover::after { opacity: 1; }
+
+/* ------------------------------------------------------------
+   页脚 · 返回链接
+   ------------------------------------------------------------ */
+.lwj_footer {
+  margin-top: 72px;
+  padding-top: 20px;
+  border-top: 1px solid var(--fa-rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-family: var(--fa-mono);
+  font-size: 12px;
+  color: var(--fa-muted);
+}
+.lwj_footer a {
+  color: var(--fa-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--fa-rule);
+  padding-bottom: 2px;
+  transition: color .15s, border-color .15s;
+}
+.lwj_footer a:hover {
+  color: var(--fa-accent);
+  border-color: var(--fa-accent);
+}
+
+/* ------------------------------------------------------------
+   轻量 Toast（替代 alert）
+   ------------------------------------------------------------ */
+.lwj_toast {
+  position: fixed;
+  bottom: 32px; right: 32px;
+  background: var(--fa-ink);
+  color: var(--fa-paper);
+  font-family: var(--fa-mono);
+  font-size: 12px;
+  padding: 14px 22px;
+  border-left: 3px solid var(--fa-accent);
+  box-shadow: 0 8px 30px rgba(26,22,18,.25);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+  z-index: 100;
+  pointer-events: none;
+}
+.lwj_toast[data-show="1"] {
+  transform: translateY(0);
+  opacity: 1;
+}
+.lwj_toast kbd {
+  background: rgba(255,255,255,.15);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--fa-mono);
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .lwj_page { padding: 48px 24px 40px; }
+  .lwj_hero-title { font-size: 44px; }
+  .lwj_hero-sub { font-size: 16px; }
+  .lwj_grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<div class="lwj_page">
+
+  <!-- ========== HERO ========== -->
+  <header class="lwj_hero">
+    <h1 class="lwj_hero-title">Font Awesome</h1>
+    <p class="lwj_hero-sub">a specimen of icons</p>
+    <div class="lwj_hero-meta">
+      <span><strong>6.5.1</strong> &nbsp;·&nbsp; Free Edition</span>
+      <span>2026.10.22</span>
+      <span>click any glyph to copy its class</span>
+    </div>
+  </header>
+
+  <!-- ========== SECTION · SOLID ========== -->
+  <section class="lwj_section">
+    <div class="lwj_section-head">
+      <span class="lwj_section-label">Solid <em>fa-solid</em></span>
+    </div>
+    <div class="lwj_grid">
+      <div class="lwj_tile"><i class="fa-solid fa-house"></i><span class="lwj_tile-name">fa-house</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-user"></i><span class="lwj_tile-name">fa-user</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-envelope"></i><span class="lwj_tile-name">fa-envelope</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-phone"></i><span class="lwj_tile-name">fa-phone</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-heart"></i><span class="lwj_tile-name">fa-heart</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-camera"></i><span class="lwj_tile-name">fa-camera</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-music"></i><span class="lwj_tile-name">fa-music</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-cloud"></i><span class="lwj_tile-name">fa-cloud</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-bolt"></i><span class="lwj_tile-name">fa-bolt</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-rocket"></i><span class="lwj_tile-name">fa-rocket</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-code"></i><span class="lwj_tile-name">fa-code</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-gift"></i><span class="lwj_tile-name">fa-gift</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-magnifying-glass"></i><span class="lwj_tile-name">fa-magnifying-glass</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-bell"></i><span class="lwj_tile-name">fa-bell</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-gear"></i><span class="lwj_tile-name">fa-gear</span></div>
+      <div class="lwj_tile"><i class="fa-solid fa-map-location-dot"></i><span class="lwj_tile-name">fa-map-location-dot</span></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION · REGULAR ========== -->
+  <section class="lwj_section">
+    <div class="lwj_section-head">
+      <span class="lwj_section-label">Regular <em>fa-regular</em></span>
+    </div>
+    <div class="lwj_grid">
+      <div class="lwj_tile"><i class="fa-regular fa-heart"></i><span class="lwj_tile-name">fa-heart</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-star"></i><span class="lwj_tile-name">fa-star</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-envelope"></i><span class="lwj_tile-name">fa-envelope</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-user"></i><span class="lwj_tile-name">fa-user</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-bookmark"></i><span class="lwj_tile-name">fa-bookmark</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-calendar"></i><span class="lwj_tile-name">fa-calendar</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-comment"></i><span class="lwj_tile-name">fa-comment</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-copy"></i><span class="lwj_tile-name">fa-copy</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-file"></i><span class="lwj_tile-name">fa-file</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-image"></i><span class="lwj_tile-name">fa-image</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-lightbulb"></i><span class="lwj_tile-name">fa-lightbulb</span></div>
+      <div class="lwj_tile"><i class="fa-regular fa-moon"></i><span class="lwj_tile-name">fa-moon</span></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION · BRANDS ========== -->
+  <section class="lwj_section">
+    <div class="lwj_section-head">
+      <span class="lwj_section-label">Brands <em>fa-brands</em></span>
+    </div>
+    <div class="lwj_grid">
+      <div class="lwj_tile"><i class="fa-brands fa-github"></i><span class="lwj_tile-name">fa-github</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-weixin"></i><span class="lwj_tile-name">fa-weixin</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-weibo"></i><span class="lwj_tile-name">fa-weibo</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-chrome"></i><span class="lwj_tile-name">fa-chrome</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-firefox-browser"></i><span class="lwj_tile-name">fa-firefox-browser</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-html5"></i><span class="lwj_tile-name">fa-html5</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-css3-alt"></i><span class="lwj_tile-name">fa-css3-alt</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-js"></i><span class="lwj_tile-name">fa-js</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-python"></i><span class="lwj_tile-name">fa-python</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-java"></i><span class="lwj_tile-name">fa-java</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-node-js"></i><span class="lwj_tile-name">fa-node-js</span></div>
+      <div class="lwj_tile"><i class="fa-brands fa-docker"></i><span class="lwj_tile-name">fa-docker</span></div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="lwj_footer">
+    <span>type specimen · produced 2026</span>
+    <a href="index.html"><i class="fa-solid fa-arrow-left" style="margin-right:4px;font-size:10px"></i>回 到 首 页</a>
+  </footer>
+
+</div>
+
+<div class="lwj_toast" id="lwj_toast"></div>
+
+<script>
+  var lwj_toastEl = document.getElementById('lwj_toast');
+  var lwj_toastTimer = null;
+  function lwj_showToast(msg) {
+    lwj_toastEl.textContent = msg;
+    lwj_toastEl.setAttribute('data-show', '1');
+    clearTimeout(lwj_toastTimer);
+    lwj_toastTimer = setTimeout(function() {
+      lwj_toastEl.setAttribute('data-show', '0');
+    }, 1600);
+  }
+
+  document.querySelectorAll('.lwj_tile').forEach(function(tile) {
+    tile.addEventListener('click', function() {
+      var cls = tile.querySelector('i').className;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(cls).then(function() {
+          lwj_showToast('已复制 — ' + cls);
+        }).catch(function() {
+          lwj_showToast(cls);
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

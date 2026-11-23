@@ -1,0 +1,652 @@
+﻿<!--
+  作者：李汶静
+  创建时间：2026-11-16 14:35
+  使用模型：DeepSeek-V4.1-Flash
+  功能：移动端任务三「图片查看器」，支持双指缩放 1x–4x、双击在 1x/2x 间切换、放大后单指拖动，并以两指中点为缩放基准保证画面不跳。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>任务三 · 图片查看器 | 移动端触摸交互</title>
+  <link rel="stylesheet" href="../cdn/fonts/fonts.css">
+  <style>
+    :root {
+      --lwj_bg: #0a0810;
+      --lwj_panel: #141020;
+      --lwj_line: rgba(255, 255, 255, 0.09);
+      --lwj_text: #edeaf5;
+      --lwj_muted: #948da9;
+      --lwj_lime: #c8f24d;
+      --lwj_violet: #8b6cff;
+      --lwj_mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(900px 480px at 50% -6%, rgba(139, 108, 255, 0.16), transparent 70%),
+        var(--lwj_bg);
+      color: var(--lwj_text);
+      line-height: 1.7;
+      padding-bottom: 48px;
+    }
+    .lwj_wrap { max-width: 560px; margin: 0 auto; padding: 0 18px; }
+
+    /* 返回条 */
+    .lwj_topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 0 4px; font-size: 12.5px; color: var(--lwj_muted);
+    }
+    .lwj_topbar a {
+      color: var(--lwj_muted); text-decoration: none; border: 1px solid var(--lwj_line);
+      border-radius: 999px; padding: 5px 12px; transition: color 0.2s, border-color 0.2s;
+    }
+    .lwj_topbar a:hover { color: var(--lwj_lime); border-color: rgba(200, 242, 77, 0.5); }
+
+    /* 页头 */
+    .lwj_hero { padding: 18px 0 16px; text-align: center; }
+    .lwj_hero h1 {
+      font-size: clamp(24px, 7vw, 32px); letter-spacing: 0.04em;
+      background: linear-gradient(100deg, #fff, #cdd8ff 55%, var(--lwj_lime));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .lwj_hero p { font-size: 13.5px; color: #c9c3d9; margin-top: 8px; }
+    .lwj_hero code {
+      font-family: var(--lwj_mono); font-size: 11.5px;
+      background: rgba(139, 108, 255, 0.16); border: 1px solid rgba(139, 108, 255, 0.3);
+      border-radius: 5px; padding: 1px 5px; color: #d9d0ff;
+    }
+
+    /* 查看器 */
+    .lwj_viewer {
+      position: relative;
+      height: 62vh;
+      min-height: 320px;
+      max-height: 560px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #08060e;
+      border: 1px solid var(--lwj_line);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      cursor: grab;
+    }
+    .lwj_viewer:active { cursor: grabbing; }
+    .lwj_zoom-stage {
+      position: absolute;
+      inset: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+    .lwj_zoom-stage img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    .lwj_scale-badge {
+      position: absolute; top: 12px; right: 12px; z-index: 2;
+      font-family: var(--lwj_mono); font-size: 11.5px;
+      color: var(--lwj_lime); background: rgba(8, 6, 14, 0.72);
+      border: 1px solid rgba(200, 242, 77, 0.4); border-radius: 999px;
+      padding: 3px 10px; letter-spacing: 0.06em;
+      pointer-events: none;
+    }
+    .lwj_hint {
+      position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+      z-index: 2; white-space: nowrap;
+      font-size: 11.5px; color: rgba(255, 255, 255, 0.78);
+      background: rgba(8, 6, 14, 0.66); border: 1px solid var(--lwj_line);
+      border-radius: 999px; padding: 4px 12px;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .lwj_hint.is-faded { opacity: 0; }
+
+    .lwj_toolbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-top: 12px;
+    }
+    .lwj_toolbar span { font-size: 12px; color: var(--lwj_muted); }
+    .lwj_btn {
+      font-family: inherit; font-size: 12px; color: var(--lwj_text);
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--lwj_line);
+      border-radius: 999px; padding: 6px 15px; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s; touch-action: manipulation;
+    }
+    .lwj_btn:hover { border-color: rgba(200, 242, 77, 0.5); color: var(--lwj_lime); }
+    .lwj_btn:active { background: rgba(200, 242, 77, 0.16); }
+
+    /* 演示视频入口 */
+    .lwj_video { margin-top: 22px; }
+    .lwj_video-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .lwj_video-head h2 { font-size: 15px; color: #fff; letter-spacing: 0.04em; }
+    .lwj_video-head a {
+      font-size: 11.5px; color: var(--lwj_lime); text-decoration: none;
+      border-bottom: 1px dashed rgba(200, 242, 77, 0.5);
+    }
+    .lwj_video-box {
+      position: relative; aspect-ratio: 16 / 9;
+      border-radius: 14px; overflow: hidden;
+      border: 1px solid var(--lwj_line); background: #08060e;
+    }
+    .lwj_video-player {
+      display: none; width: 100%; height: 100%;
+      object-fit: contain; background: #000;
+    }
+    .lwj_video-player.is-ready { display: block; }
+    .lwj_video-empty {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 16px; text-align: center;
+      background:
+        radial-gradient(240px 140px at 50% 40%, rgba(139, 108, 255, 0.16), transparent 72%),
+        #08060e;
+      color: #8c84a6; font-size: 12.5px;
+      transition: opacity 0.25s;
+    }
+    .lwj_video-empty.is-hidden { opacity: 0; pointer-events: none; }
+    .lwj_video-icon { font-size: 26px; color: var(--lwj_lime); line-height: 1; }
+    .lwj_video-empty code {
+      font-family: var(--lwj_mono); font-size: 11px; color: #d9d0ff;
+      background: rgba(139, 108, 255, 0.14); border: 1px solid rgba(139, 108, 255, 0.3);
+      border-radius: 5px; padding: 1px 6px; word-break: break-all;
+    }
+    .lwj_video-note { margin-top: 8px; font-size: 11.5px; color: #7f7895; line-height: 1.8; }
+    .lwj_video-note code {
+      font-family: var(--lwj_mono); font-size: 11px; color: #d9d0ff;
+    }
+
+    /* 说明 */
+    .lwj_notes {
+      margin-top: 22px; padding: 16px;
+      border: 1px solid var(--lwj_line); border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+    .lwj_notes h2 { font-size: 14px; margin-bottom: 8px; color: #fff; }
+    .lwj_notes p { font-size: 12.5px; color: #a9a2bf; margin-bottom: 6px; }
+    .lwj_notes ul { list-style: none; display: grid; gap: 6px; }
+    .lwj_notes li {
+      font-size: 12.5px; color: #a9a2bf; padding-left: 18px; position: relative;
+    }
+    .lwj_notes li::before { content: "▸"; position: absolute; left: 0; color: var(--lwj_lime); }
+    .lwj_notes code {
+      font-family: var(--lwj_mono); font-size: 11.5px; color: #d9d0ff;
+    }
+
+    /* 页脚 */
+    .lwj_footer {
+      margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--lwj_line);
+      text-align: center; font-size: 12px; color: #6f6885;
+    }
+    .lwj_footer a { color: var(--lwj_lime); text-decoration: none; }
+    .lwj_footer p + p { margin-top: 6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: 0.001s !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lwj_wrap">
+    <div class="lwj_topbar">
+      <span>任务三 · 多指手势</span>
+      <a href="index.html">← 返回课程</a>
+    </div>
+
+    <header class="lwj_hero">
+      <h1>图片查看器</h1>
+      <p>双指缩放 <code>1x–4x</code> · 双击 <code>1x / 2x</code> · 放大后单指拖动</p>
+    </header>
+
+    <div class="lwj_viewer" id="lwj_viewer">
+      <div class="lwj_zoom-stage" id="lwj_stage">
+        <img src="images/lwj_zoom_detail.jpg" alt="徽派建筑墙面与木格窗细节图" draggable="false">
+      </div>
+      <span class="lwj_scale-badge" id="lwj_scale_badge">1.0×</span>
+      <span class="lwj_hint" id="lwj_hint">双指缩放请用手机打开 · 桌面可用滚轮</span>
+    </div>
+
+    <div class="lwj_toolbar">
+      <span>缩放范围 1.0× – 4.0×，超出边界自动回弹</span>
+      <button class="lwj_btn" type="button" id="lwj_reset">复位 1×</button>
+    </div>
+
+    <!-- 操作演示视频入口：把视频放进 mobile/videos 后自动出现播放器 -->
+    <section class="lwj_video">
+      <div class="lwj_video-head">
+        <h2>操作演示视频</h2>
+        <a href="https://github.com/lwj30/liwenjing/tree/main/mobile/videos" target="_blank" rel="noopener">GitHub 视频目录 ↗</a>
+      </div>
+      <div class="lwj_video-box">
+        <video class="lwj_video-player" id="lwj_video" controls playsinline preload="metadata" src="videos/lwj_zoom_demo.mp4"></video>
+        <div class="lwj_video-empty" id="lwj_video_empty">
+          <span class="lwj_video-icon">▶</span>
+          <span>视频还没放进来</span>
+          <code>mobile/videos/lwj_zoom_demo.mp4</code>
+        </div>
+      </div>
+      <p class="lwj_video-note">
+        把视频按上面的文件名放进 <code>mobile/videos/</code>，刷新本页即可播放；上传 GitHub 后同一路径的视频可直接在仓库中打开，
+        开启 GitHub Pages 后也能通过本页播放。单文件建议不超过 25MB，超过会推不上去。
+      </p>
+    </section>
+
+    <section class="lwj_notes">
+      <h2>缩放为什么不会“跳”</h2>
+      <ul>
+        <li>缩放前后都锁定<strong>两指中点</strong>：<code>t1 = m - (s1 / s0) × (m - t0)</code></li>
+        <li><code>touchstart</code> 时清空上一轮的 <code>lwj_lastDist</code>，避免第一帧拿旧数据比较</li>
+        <li><code>touchmove</code> 用 <code>{ passive: false }</code> 并 <code>preventDefault()</code>，阻止整页缩放</li>
+        <li>松手后统一做边界收敛，拖动越界时用 0.3 的阻尼跟随</li>
+        <li>缩回 1× 自动居中；旋转屏幕只重新夹紧边界，不清空缩放状态</li>
+      </ul>
+    </section>
+
+    <footer class="lwj_footer">
+      <p>李汶静 · 学号 20260101 · 高级网页设计移动端作业</p>
+      <p><a href="index.html">← 返回课程页</a> · <a href="../index.html">返回作品集首页 →</a></p>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * 任务三：图片查看器
+     * @desc 双指缩放、双击缩放与单指拖动，以两指中点为基准做定点缩放，并限制在 1x–4x 与边界内
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    (function () {
+      'use strict';
+
+      var LWJ_MIN_SCALE = 1;
+      var LWJ_MAX_SCALE = 4;
+      var LWJ_DOUBLE_TAP_SCALE = 2;
+      var LWJ_ANIM = 250;
+
+      var lwj_viewer = document.getElementById('lwj_viewer');
+      var lwj_stage = document.getElementById('lwj_stage');
+      var lwj_badge = document.getElementById('lwj_scale_badge');
+      var lwj_hint = document.getElementById('lwj_hint');
+
+      var lwj_scale = 1;
+      var lwj_tx = 0;
+      var lwj_ty = 0;
+
+      var lwj_pinching = false;
+      var lwj_panning = false;
+      var lwj_startDist = 0;
+      var lwj_startScale = 1;
+      var lwj_startTx = 0;
+      var lwj_startTy = 0;
+      var lwj_startMid = { x: 0, y: 0 };
+      var lwj_panStartX = 0;
+      var lwj_panStartY = 0;
+
+      var lwj_lastTapTime = 0;
+      var lwj_touchStartX = 0;
+      var lwj_touchStartY = 0;
+
+      /**
+       * 限制数值区间
+       * @desc 缩放倍率等都需要夹紧，避免越界导致布局异常
+       * @param {number} lwj_value - 原始值
+       * @param {number} lwj_min - 最小值
+       * @param {number} lwj_max - 最大值
+       * @returns {number} 夹紧后的值
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_clamp(lwj_value, lwj_min, lwj_max) {
+        return Math.min(lwj_max, Math.max(lwj_min, lwj_value));
+      }
+
+      /**
+       * 取容器尺寸
+       * @desc 每次计算边界都用实时尺寸，才能兼容横竖屏切换与窗口缩放
+       * @returns {{w: number, h: number}} 查看器宽高
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_viewportSize() {
+        var lwj_rect = lwj_viewer.getBoundingClientRect();
+        return { w: lwj_rect.width, h: lwj_rect.height };
+      }
+
+      /**
+       * 夹紧位移
+       * @desc 放大后允许平移的范围是 0 到 (容器尺寸 - 内容尺寸)，1x 时强制归零即自动居中
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_clampTranslate() {
+        var lwj_size = lwj_viewportSize();
+        var lwj_minX = lwj_size.w - lwj_size.w * lwj_scale;
+        var lwj_minY = lwj_size.h - lwj_size.h * lwj_scale;
+        lwj_tx = lwj_clamp(lwj_tx, lwj_minX, 0);
+        lwj_ty = lwj_clamp(lwj_ty, lwj_minY, 0);
+        if (lwj_scale <= 1.001) { lwj_tx = 0; lwj_ty = 0; }
+      }
+
+      /**
+       * 应用变换
+       * @desc 统一写 transform，配合 transition 实现程序化缩放的 0.25s 过渡
+       * @param {boolean} lwj_animate - 是否需要过渡动画
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_apply(lwj_animate) {
+        lwj_stage.style.transition = lwj_animate ? 'transform ' + (LWJ_ANIM / 1000) + 's ease' : 'none';
+        lwj_stage.style.transform = 'translate3d(' + lwj_tx + 'px, ' + lwj_ty + 'px, 0) scale(' + lwj_scale + ')';
+        lwj_badge.textContent = lwj_scale.toFixed(1) + '×';
+      }
+
+      /**
+       * 以某个基准点缩放到目标倍率
+       * @desc 用 t1 = m - (s1 / s0)·(m - t0) 保证基准点下的画面位置不变，这就是“不跳”的关键
+       * @param {number} lwj_target - 目标倍率
+       * @param {number} lwj_cx - 基准点横坐标（相对查看器）
+       * @param {number} lwj_cy - 基准点纵坐标（相对查看器）
+       * @param {boolean} lwj_animate - 是否需要过渡动画
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_zoomTo(lwj_target, lwj_cx, lwj_cy, lwj_animate) {
+        var lwj_next = lwj_clamp(lwj_target, LWJ_MIN_SCALE, LWJ_MAX_SCALE);
+        var lwj_ratio = lwj_next / lwj_scale;
+        lwj_tx = lwj_cx - lwj_ratio * (lwj_cx - lwj_tx);
+        lwj_ty = lwj_cy - lwj_ratio * (lwj_cy - lwj_ty);
+        lwj_scale = lwj_next;
+        lwj_clampTranslate();
+        lwj_apply(lwj_animate);
+      }
+
+      /**
+       * 计算两指中点
+       * @desc 相对查看器左上角的坐标，缩放基准必须与 transform 的原点坐标系一致
+       * @param {Touch} lwj_t1 - 第一根手指
+       * @param {Touch} lwj_t2 - 第二根手指
+       * @returns {{x: number, y: number}} 中点坐标
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_midPoint(lwj_t1, lwj_t2) {
+        var lwj_rect = lwj_viewer.getBoundingClientRect();
+        return {
+          x: (lwj_t1.clientX + lwj_t2.clientX) / 2 - lwj_rect.left,
+          y: (lwj_t1.clientY + lwj_t2.clientY) / 2 - lwj_rect.top
+        };
+      }
+
+      /**
+       * 开始双指缩放
+       * @desc 记录初始间距、初始倍率与两指中点，后续每帧都以这组数据为参照，避免累乘误差
+       * @param {TouchList} lwj_touches - 当前触点列表
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_pinchStart(lwj_touches) {
+        lwj_pinching = true;
+        lwj_panning = false;
+        lwj_startDist = Math.hypot(
+          lwj_touches[0].clientX - lwj_touches[1].clientX,
+          lwj_touches[0].clientY - lwj_touches[1].clientY
+        );
+        lwj_startScale = lwj_scale;
+        lwj_startTx = lwj_tx;
+        lwj_startTy = lwj_ty;
+        lwj_startMid = lwj_midPoint(lwj_touches[0], lwj_touches[1]);
+        lwj_hint.classList.add('is-faded');
+      }
+
+      /**
+       * 双指缩放进行中
+       * @desc 用「当前距离 ÷ 初始距离」得到倍率，再以初始两指中点为基准重算位移，保证缩放跟手不跳
+       * @param {TouchList} lwj_touches - 当前触点列表
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_pinchMove(lwj_touches) {
+        var lwj_dist = Math.hypot(
+          lwj_touches[0].clientX - lwj_touches[1].clientX,
+          lwj_touches[0].clientY - lwj_touches[1].clientY
+        );
+        if (!lwj_startDist) { lwj_startDist = lwj_dist; return; }
+
+        var lwj_raw = lwj_startScale * (lwj_dist / lwj_startDist);
+        var lwj_next = lwj_clamp(lwj_raw, LWJ_MIN_SCALE, LWJ_MAX_SCALE);
+        var lwj_ratio = lwj_next / lwj_startScale;
+
+        lwj_scale = lwj_next;
+        lwj_tx = lwj_startMid.x - lwj_ratio * (lwj_startMid.x - lwj_startTx);
+        lwj_ty = lwj_startMid.y - lwj_ratio * (lwj_startMid.y - lwj_startTy);
+        lwj_clampTranslate();
+        lwj_apply(false);
+      }
+
+      /**
+       * 开始单指拖动
+       * @desc 仅在放大状态下允许拖动，1x 时把拖动交给页面（避免无意义位移）
+       * @param {number} lwj_x - 视口横坐标
+       * @param {number} lwj_y - 视口纵坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_panStart(lwj_x, lwj_y) {
+        lwj_panning = lwj_scale > 1;
+        lwj_panStartX = lwj_x;
+        lwj_panStartY = lwj_y;
+        lwj_startTx = lwj_tx;
+        lwj_startTy = lwj_ty;
+      }
+
+      /**
+       * 单指拖动进行中
+       * @desc 越界时用 0.3 的阻尼位移，松手后再统一回弹，手感更自然
+       * @param {number} lwj_x - 视口横坐标
+       * @param {number} lwj_y - 视口纵坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_panMove(lwj_x, lwj_y) {
+        if (!lwj_panning) { return; }
+        var lwj_size = lwj_viewportSize();
+        var lwj_minX = lwj_size.w - lwj_size.w * lwj_scale;
+        var lwj_minY = lwj_size.h - lwj_size.h * lwj_scale;
+
+        var lwj_nextX = lwj_startTx + (lwj_x - lwj_panStartX);
+        var lwj_nextY = lwj_startTy + (lwj_y - lwj_panStartY);
+
+        if (lwj_nextX > 0) { lwj_nextX *= 0.3; }
+        if (lwj_nextX < lwj_minX) { lwj_nextX = lwj_minX + (lwj_nextX - lwj_minX) * 0.3; }
+        if (lwj_nextY > 0) { lwj_nextY *= 0.3; }
+        if (lwj_nextY < lwj_minY) { lwj_nextY = lwj_minY + (lwj_nextY - lwj_minY) * 0.3; }
+
+        lwj_tx = lwj_nextX;
+        lwj_ty = lwj_nextY;
+        lwj_apply(false);
+      }
+
+      /**
+       * 双击缩放
+       * @desc 1x 时以点击点为中心放大到 2x，已放大时回到 1x 并居中
+       * @param {number} lwj_x - 相对查看器的横坐标
+       * @param {number} lwj_y - 相对查看器的纵坐标
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_handleDoubleTap(lwj_x, lwj_y) {
+        if (lwj_scale > 1.05) {
+          lwj_zoomTo(1, lwj_x, lwj_y, true);
+        } else {
+          lwj_zoomTo(LWJ_DOUBLE_TAP_SCALE, lwj_x, lwj_y, true);
+        }
+        lwj_hint.classList.add('is-faded');
+      }
+
+      lwj_viewer.addEventListener('touchstart', function (e) {
+        var lwj_t = e.touches[0];
+        lwj_touchStartX = lwj_t.clientX;
+        lwj_touchStartY = lwj_t.clientY;
+
+        if (e.touches.length >= 2) {
+          lwj_pinchStart(e.touches);
+        } else {
+          lwj_panStart(lwj_t.clientX, lwj_t.clientY);
+        }
+      }, { passive: true });
+
+      lwj_viewer.addEventListener('touchmove', function (e) {
+        if (e.touches.length >= 2) {
+          e.preventDefault();
+          if (!lwj_pinching) { lwj_pinchStart(e.touches); }
+          lwj_pinchMove(e.touches);
+          return;
+        }
+        if (lwj_pinching) { return; }
+        if (lwj_panning) { e.preventDefault(); }
+        lwj_panMove(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: false });
+
+      lwj_viewer.addEventListener('touchend', function (e) {
+        var lwj_t = e.changedTouches[0];
+        var lwj_moved = Math.hypot(lwj_t.clientX - lwj_touchStartX, lwj_t.clientY - lwj_touchStartY);
+
+        if (lwj_pinching) {
+          if (e.touches.length < 2) {
+            lwj_pinching = false;
+            lwj_clampTranslate();
+            lwj_apply(true);
+          }
+          return;
+        }
+
+        lwj_panning = false;
+        lwj_clampTranslate();
+        lwj_apply(true);
+
+        // 双击判定：300ms 内两次、且几乎没有移动
+        if (e.touches.length === 0 && lwj_moved < 12) {
+          var lwj_now = Date.now();
+          if (lwj_now - lwj_lastTapTime < 300) {
+            lwj_lastTapTime = 0;
+            var lwj_rect = lwj_viewer.getBoundingClientRect();
+            lwj_handleDoubleTap(lwj_t.clientX - lwj_rect.left, lwj_t.clientY - lwj_rect.top);
+          } else {
+            lwj_lastTapTime = lwj_now;
+          }
+        }
+      }, { passive: true });
+
+      lwj_viewer.addEventListener('touchcancel', function () {
+        lwj_pinching = false;
+        lwj_panning = false;
+        lwj_clampTranslate();
+        lwj_apply(true);
+      }, { passive: true });
+
+      /* 桌面端：滚轮缩放 + 双击，便于无手机时验证定点缩放逻辑 */
+      lwj_viewer.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        var lwj_rect = lwj_viewer.getBoundingClientRect();
+        var lwj_factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+        lwj_zoomTo(lwj_scale * lwj_factor, e.clientX - lwj_rect.left, e.clientY - lwj_rect.top, false);
+        lwj_hint.classList.add('is-faded');
+      }, { passive: false });
+
+      lwj_viewer.addEventListener('dblclick', function (e) {
+        var lwj_rect = lwj_viewer.getBoundingClientRect();
+        lwj_handleDoubleTap(e.clientX - lwj_rect.left, e.clientY - lwj_rect.top);
+      });
+
+      /* 鼠标拖动（桌面端降级） */
+      var lwj_mouseDown = false;
+      lwj_viewer.addEventListener('mousedown', function (e) {
+        if (lwj_scale <= 1) { return; }
+        lwj_mouseDown = true;
+        lwj_panStart(e.clientX, e.clientY);
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function (e) {
+        if (!lwj_mouseDown) { return; }
+        lwj_panMove(e.clientX, e.clientY);
+      });
+      document.addEventListener('mouseup', function () {
+        if (!lwj_mouseDown) { return; }
+        lwj_mouseDown = false;
+        lwj_clampTranslate();
+        lwj_apply(true);
+      });
+
+      document.getElementById('lwj_reset').addEventListener('click', function () {
+        lwj_scale = 1;
+        lwj_tx = 0;
+        lwj_ty = 0;
+        lwj_apply(true);
+      });
+
+      /**
+       * 窗口尺寸变化后重新夹紧
+       * @desc 横竖屏切换时保留缩放倍率，只把位移重新限制到边界，避免出现空白条
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_handleResize() {
+        lwj_clampTranslate();
+        lwj_apply(false);
+      }
+
+      window.addEventListener('resize', lwj_handleResize);
+      window.addEventListener('orientationchange', function () {
+        setTimeout(lwj_handleResize, 300);
+      });
+
+      /**
+       * 初始化演示视频入口
+       * @desc 只有视频文件读取到元数据后才显示播放器；找不到文件时保留放置说明，便于后续插入视频
+       * @returns {void}
+       * @author 李汶静
+       * @created 2026-11-16
+       */
+      function lwj_initVideo() {
+        var lwj_video = document.getElementById('lwj_video');
+        var lwj_videoEmpty = document.getElementById('lwj_video_empty');
+        if (!lwj_video || !lwj_videoEmpty) { return; }
+
+        lwj_video.addEventListener('loadedmetadata', function () {
+          lwj_video.classList.add('is-ready');
+          lwj_videoEmpty.classList.add('is-hidden');
+        });
+        lwj_video.addEventListener('error', function () {
+          lwj_video.classList.remove('is-ready');
+          lwj_videoEmpty.classList.remove('is-hidden');
+        });
+        lwj_video.load();
+      }
+
+      lwj_initVideo();
+      lwj_apply(false);
+    })();
+  </script>
+</body>
+</html>
