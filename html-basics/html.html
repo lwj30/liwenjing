@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的第一个网页</title>
+    <style>
+        /* 页面小幅美化，示例用 */
+        body{background:linear-gradient(180deg,#f8fafc,#eef2ff);}
+        .title-demo{color:#c026d3;background:transparent;padding:8px;border-radius:6px}
+        img{max-width:100%;height:auto}
+    </style>
+</head>
+<body>
+    <h2 class="title-demo">1.标题</h2>/*class类选择器*/
+    <h1>一级标题</h1>
+    <h2>二级标题</h2>
+    <h3>三级标题</h3>
+    <h4>四级标题</h4>
+    <h5>五级标题</h5>
+    <h6>六级标题</h6>
+    <h2>2.段落</h2>
+    <p>段落的<en>特点</en>：段落内容<strong>自动换行</strong>，<br>有<u>自带</u>的间距,<s>需要删除的</s>
+    </p>
+    <hr>分割线
+    <h2>加入超链接或图片</h2>
+    <a href="https://www.baidu.com" target="_blank">这是一个超链接</a>
+    <img src="https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png" alt="这是一个图片,只能用相对路径，不能用绝对路径">
+    <img src ="./img/1.jpg" alt="这是一个图片,只能用相对路径，不能用绝对路径，./当前目录，在图片无法显示时出现此段文字">
+    <h2>3.列表</h2>
+    <h3>我喜欢做的事</h3>
+    <ul>
+        <li>无序号列表</li>
+        <li>学习HTML</li>
+        <li>学习CSS</li>
+        <li>学习JavaScript</li>
+    </ul>
+    <p>这是一个段落</p>
+    <ol type="A">
+        <li>有序号列表</li>
+        <li>学习HTML</li>
+        <li>学习CSS</li>
+        <li>学习JavaScript</li>
+    </ol>  
+    <h2>4.表格</h2>
+    <p>这是一个段落</p>
+    <!-- border是边框宽度，cellspacing是表格之间的距离，cellpadding是单元格内容与边框之间的距离-->
+    <table border="1" cellspacing="2" cellpadding="10" id="user-table">/*id选择器及表格颜色，表格宽度，居中，边框*/
+        <caption>这是一个表格</caption>
+        <!--colspan是合并列，rowspan是合并行-->
+        <!--(tr>td*3)*4--回车，表示的是三行四列的情况-->
+        <tr>
+            <th>序号</th>
+            <th>姓名</th>
+            <th>年龄</th>
+            <th>性别</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>张三</td>
+            <td>18</td>
+            <td>男</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>李四</td>
+            <td>19</td>
+            <td>女</td>
+        </tr>
+        <h2>6.div块级元素</h2>
+        <div style="border: 1px solid red;">
+            <p>
+                <strong>这是一个段落</strong>
+                <br>    
+                <em>这是一个斜体段落</em>
+                <br>
+                <u>这是一个下划线段落</u>
+
+                       这是一个div块级元素
+            </p>
+            <p>div特点独占一整行，宽度自适应</p>
+            <p>div可以包含其他块级元素，可以嵌套使用</p>
+        </div>
+        <h2>7.h5语义化</h2>
+        <p>h5语义化是指在HTML5中使用语义化的标签来描述网页的内容，而不是使用通用的标签。</p>
+        <p>语义化的标签可以提高网页的可读性和可维护性，也可以帮助搜索引擎更好地理解网页的内容。</p>
+        <p>语义化的标签包括：h1~h6、p、div、span、ul、ol、li、a、img、table、tr、td、th、form、input、select、option、textarea、button等。</p>
+        <header>头部</header>
+        <nav>导航栏</nav>
+        <main>主要内容区域</main>
+        <footer>页脚</footer>
+        <aside>侧边栏</aside>
+        <section>章节</section>
+        <article>文章</article>
+        <article>文章</article>
+        <article>文章</article>
+        <article>文章</article>
+        <h2>基础表单+H5表单</h2>
+        <form action="https://www.baidu.com" method="get">
+            <label for="username">用户名：</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="password">密码：</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <input type="submit" value="登录">
+
+        </form>
+        <form action="https://www.baidu.com" method="post">
+            <label for="username">用户名：</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="password">密码：</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <input type="submit" value="登录">
+        </form>
+        <!--get 方法提交表单数据，将数据添加到URL后面，不加密数据,只可读,post方法提交表单数据，将数据添加到请求体中，加密数据，可写
+        type = password 密码框，输入的内容不会显示在输入框中,label标签可以关联输入框，点击标签可以聚焦到输入框,lable 的for属性可以关联输入框的id属性，实现点击标签聚焦聚焦到输入框-->
+        <p>邮箱：</p>
+        <!--在h5之后出现-->
+        <label for="email">邮箱：</label>
+        <input type="email" id="email" name="email" required>
+    </p>
+    <p>文件上传：</p>
+    <input type="file" id="file" name="file" required>
+    </p>
+    <p>验证码：</p>
+    <input type="text" id="code" name="code" required>
+    </p>
+    <p>性别：</p>
+    <input type="radio" id="male" name="gender" value="male">男
+    <input type="radio" id="female" name="gender" value="female">女
+    </p>
+    <!--单选框-->
+    <p>爱好：</p>
+    <input type="checkbox" id="hobby1" name="hobby" value="hobby1">运动
+    <input type="checkbox" id="hobby2" name="hobby" value="hobby2">旅游
+    <input type="checkbox" id="hobby3" name="hobby" value="hobby3">阅读
+    </p>
+    <p>个人简介：</p>
+    <textarea id="introduction" name="introduction" rows="4" cols="50" required></textarea>
+    </p>
+    <p>下拉框：</p>
+    <select id="city" name="city" required>
+        <option value="beijing">北京</option>
+        <option value="shanghai">上海</option>
+        <option value="guangzhou">广州</option>
+        <option value="shenzhen">深圳</option>
+    </select>
+    </p>
+    <!--多选框,name属性可以相同，多个复选框可以同时选中，相同的为一组-->
+    <p>备注：</p>
+    <textarea id="remark" name="remark" rows="4" cols="50" required></textarea>
+    </p>
+    <p>提交：</p>
+    <input type="submit" value="提交">
+    </p>
+    <p> 重置：</p>
+    <input type="reset" value="重置"> 
+    </p>
+
+    </form>
+    <button class="btn">提交</button>
+    <button>重置</button>
+    <button>表单外的按钮</button>
+
+    </table>
+    <p>这是一个段落</p>
+    <h3>表格的属性</h3>
+
+
+    CSS样式
+

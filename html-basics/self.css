@@ -1,0 +1,25 @@
+/* 自我介绍页面样式（Hero 风格） */
+:root{
+  --bg:#0b1020; --card:#0f1724; --accent:#7c3aed; --muted:#9aa4b2; --glass:rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:PingFang SC,\"Helvetica Neue\",Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#071029 0%,#071226 100%);color:#e6eef6}
+.hero{position:relative;overflow:hidden;padding:80px 20px 120px}
+.hero-inner{max-width:1100px;margin:0 auto;text-align:left}
+.hero-title{font-size:44px;margin:0 0 12px;color:#fff;letter-spacing:1px}
+.hero-sub{color:rgba(255,255,255,0.85);margin:0 0 18px}
+.hero-ctas .btn{margin-right:10px}
+.btn{display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);text-decoration:none;color:inherit;background:transparent;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#5b21b6);color:#fff;border:none}
+.btn.ghost{background:rgba(255,255,255,0.06);color:#e6eef6}
+.hero-decor{position:absolute;right:-10%;top:-10%;width:60vmax;height:60vmax;background:radial-gradient(circle at 30% 30%, rgba(124,58,237,0.35), rgba(124,58,237,0.12) 25%, transparent 40%), radial-gradient(circle at 70% 70%, rgba(99,102,241,0.22),transparent 40%);filter:blur(60px);pointer-events:none}
+.site{max-width:1100px;margin:-60px auto 60px;padding:20px;display:grid;grid-template-columns:1fr;gap:20px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+.info-table{width:100%;max-width:600px;border-collapse:collapse;margin:12px 0}
+.info-table th{text-align:left;padding:8px;background:rgba(255,255,255,0.03);width:120px}
+.info-table td{padding:8px}
+.inline-controls label{margin-right:12px}
+form input[type="text"],form input[type="email"],form textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;margin-bottom:10px}
+.form-actions{margin-top:10px}
+.site-footer{text-align:center;color:var(--muted);padding:16px 0}
+@media(max-width:720px){.hero{padding:48px 16px 90px}.hero-title{font-size:28px}.site{margin-top:-40px;padding:12px}}

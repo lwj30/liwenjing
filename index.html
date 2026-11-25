@@ -3,7 +3,7 @@
   创建时间：2026-11-09 10:35
   使用模型：DeepSeek-V4.1-Flash
   功能：课堂作品集首页，集中展示 Swiper 光影展、Swiper 11 本地组件库、汽车导购 Tab、新闻 Tab、
-        Font Awesome 图标、Lucide 图标、抓小球游戏、移动端触摸交互与 AI 聊天九个项目的入口卡片。
+        Font Awesome 图标、Lucide 图标、抓小球游戏、移动端触摸交互、诗词数据展示、AI 聊天与 HTML 基础十一个项目的入口卡片。
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -114,7 +114,9 @@
     .lwj_badge--lu { background: linear-gradient(150deg, #1f97b8, #0f5468); }
     .lwj_badge--game { background: linear-gradient(150deg, #b04a8f, #6d2454); }
     .lwj_badge--mobile { background: linear-gradient(150deg, #9ecb3f, #4c7a1f); }
+    .lwj_badge--poem { background: linear-gradient(150deg, #c9a15c, #8a6230); font-size: 19px; }
     .lwj_badge--ai { background: linear-gradient(150deg, #6f8cff, #4a2fb0); }
+    .lwj_badge--html { background: linear-gradient(150deg, #e06a3c, #a53a18); font-size: 16px; }
 
     .lwj_card h2 {
       font-size: 25px;
@@ -156,7 +158,9 @@
     .lwj_tags--lu span { background: #e6f6fa; color: #116b84; }
     .lwj_tags--game span { background: #fbeaf3; color: #8f3a6b; }
     .lwj_tags--mobile span { background: #f1f8e5; color: #557a1c; }
+    .lwj_tags--poem span { background: #f7f0e2; color: #8a6230; }
     .lwj_tags--ai span { background: #eceefe; color: #4a35b8; }
+    .lwj_tags--html span { background: #fdece4; color: #a53a18; }
 
     .lwj_card-link {
       display: inline-flex;
@@ -175,7 +179,10 @@
     .lwj_card-link--lu { color: #116b84; }
     .lwj_card-link--game { color: #8f3a6b; }
     .lwj_card-link--mobile { color: #4c7a1f; }
+    .lwj_card-link--poem { color: #8a6230; }
     .lwj_card-link--ai { color: #4a35b8; }
+    .lwj_card-link--html { color: #a53a18; }
+    .lwj_card-links { display: flex; flex-wrap: wrap; gap: 20px; }
     .lwj_card-link:hover { text-decoration: underline; }
 
     /* ====== 页脚 ====== */
@@ -353,7 +360,26 @@
         <a href="mobile/index.html" class="lwj_card-link lwj_card-link--mobile">打开项目 →</a>
       </section>
 
-      <!-- 作品九：硅基流动 AI 聊天 -->
+      <!-- 作品九：诗词数据展示 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--poem">诗</div>
+        <h2>诗词数据展示</h2>
+        <div class="lwj_card-sub">数据请求 · 本地 Node 接口</div>
+        <p class="lwj_card-desc">
+          用 Promise.all 并发请求本地 3004 端口的 /api/poems 与 /api/authors，
+          把 db/db.json 里的诗词渲染成上图下文卡片，并附作者栏；
+          支持关键字实时搜索、按标题长度排序，接口未启动时给出提示而不是白屏。
+        </p>
+        <div class="lwj_tags lwj_tags--poem">
+          <span>fetch</span>
+          <span>Promise.all</span>
+          <span>JSON 数据渲染</span>
+          <span>搜索 / 排序</span>
+        </div>
+        <a href="poems.html" class="lwj_card-link lwj_card-link--poem">打开作业 →</a>
+      </section>
+
+      <!-- 作品十：硅基流动 AI 聊天 -->
       <section class="lwj_card">
         <div class="lwj_badge lwj_badge--ai">AI</div>
         <h2>AI 聊天应用</h2>
@@ -370,6 +396,26 @@
           <span>localStorage</span>
         </div>
         <a href="ai-chat.html" class="lwj_card-link lwj_card-link--ai">打开项目 →</a>
+      </section>
+
+      <!-- 作品十一：HTML 基础练习 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--html">H5</div>
+        <h2>HTML 基础</h2>
+        <div class="lwj_card-sub">入门练习 · 标签与表单</div>
+        <p class="lwj_card-desc">
+          两页早期 HTML 练习：第一页覆盖标题、段落、列表、表格、H5 语义标签与表单控件；
+          第二页用 HTML + CSS 做了一份个人自我介绍，含基本信息、兴趣爱好、信息表格和留言表单。
+        </p>
+        <div class="lwj_tags lwj_tags--html">
+          <span>HTML 标签</span>
+          <span>表格 / 表单</span>
+          <span>H5 语义化</span>
+        </div>
+        <div class="lwj_card-links">
+          <a href="html-basics/html.html" class="lwj_card-link lwj_card-link--html">第一个网页 →</a>
+          <a href="html-basics/html_new.html" class="lwj_card-link lwj_card-link--html">个人自我介绍 →</a>
+        </div>
       </section>
 
     </main>

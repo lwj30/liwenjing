@@ -1,0 +1,395 @@
+<!--
+  作者：李汶静
+  创建时间：2026-11-12 14:06
+  使用模型：GLM-5.3-Flash
+  功能：诗词展示页，上图下文卡片结构；通过本地数据服务器（localhost:3004）的
+        /api/poems 与 /api/authors 两个接口并发读取 db/db.json 中的诗词与作者数据并渲染。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>诗词展示 | 上图下文</title>
+  <style>
+    /* ====== 基础重置与页面背景 ====== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background: linear-gradient(160deg, #f5f1e8, #e9e2d3);
+      min-height: 100vh;
+      padding: 56px 24px 72px;
+      color: #33302a;
+      line-height: 1.75;
+    }
+
+    .lwj_wrap { max-width: 1080px; margin: 0 auto; }
+
+    /* ====== 页头 ====== */
+    .lwj_head { text-align: center; margin-bottom: 44px; }
+    .lwj_head h1 {
+      font-size: 34px;
+      letter-spacing: 0.14em;
+      color: #3d3a30;
+    }
+    .lwj_head p {
+      margin-top: 10px;
+      font-size: 13.5px;
+      color: #8d8574;
+      letter-spacing: 0.06em;
+    }
+    .lwj_head code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12.5px;
+      color: #9a6b2f;
+      background: rgba(154, 107, 47, 0.1);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    /* ====== 卡片栅格 ====== */
+    .lwj_cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 26px;
+    }
+    @media (max-width: 760px) {
+      .lwj_cards { grid-template-columns: 1fr; }
+    }
+
+    /* 单张卡片：上图下文 */
+    .lwj_card {
+      background: #fffdf7;
+      border: 1px solid #e3d9c2;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(90, 74, 40, 0.12);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .lwj_card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(90, 74, 40, 0.18);
+    }
+    .lwj_card img {
+      display: block;
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .lwj_card-body { padding: 18px 22px 20px; }
+    .lwj_card-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #6b4f21;
+      margin-bottom: 8px;
+    }
+    .lwj_card-content {
+      font-size: 14.5px;
+      color: #5c5546;
+    }
+
+    /* ====== 作者栏 ====== */
+    .lwj_authors {
+      margin-bottom: 30px;
+      padding: 20px 24px;
+      background: #fffdf7;
+      border: 1px solid #e3d9c2;
+      border-radius: 14px;
+    }
+    .lwj_authors h2 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #6b4f21;
+      margin-bottom: 14px;
+    }
+    .lwj_authors ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      list-style: none;
+    }
+    .lwj_authors li {
+      font-size: 13px;
+      color: #5c5546;
+      background: rgba(154, 107, 47, 0.08);
+      border: 1px solid #e3d9c2;
+      border-radius: 999px;
+      padding: 5px 16px;
+    }
+    .lwj_authors li b { color: #6b4f21; margin-right: 6px; }
+    .lwj_authors li span { color: #8d8574; }
+
+    /* ====== 工具栏：搜索框 + 排序按钮 ====== */
+    .lwj_toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+    .lwj_search { flex: 1; min-width: 220px; }
+    .lwj_search input {
+      width: 100%;
+      padding: 11px 20px;
+      border: 1px solid #d3c7ab;
+      border-radius: 999px;
+      background: #fffdf7;
+      font-family: inherit;
+      font-size: 14px;
+      color: #33302a;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .lwj_search input::placeholder { color: #b3a98f; }
+    .lwj_search input:focus { border-color: #9a6b2f; }
+    .lwj_sort-btn {
+      padding: 11px 22px;
+      border: 1px solid #9a6b2f;
+      border-radius: 999px;
+      background: transparent;
+      color: #6b4f21;
+      font-family: inherit;
+      font-size: 13.5px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lwj_sort-btn:hover,
+    .lwj_sort-btn.lwj_active {
+      background: #6b4f21;
+      color: #fffdf7;
+    }
+    .lwj_count {
+      font-size: 12.5px;
+      color: #8d8574;
+      letter-spacing: 0.04em;
+    }
+
+    /* 加载 / 出错提示 */
+    .lwj_status {
+      text-align: center;
+      font-size: 14px;
+      color: #8d8574;
+      padding: 40px 0;
+    }
+    .lwj_status.lwj_error { color: #b0432f; }
+
+    /* ====== 页脚 ====== */
+    .lwj_foot {
+      text-align: center;
+      margin-top: 52px;
+    }
+    .lwj_foot a {
+      display: inline-block;
+      color: #8d8574;
+      text-decoration: none;
+      font-size: 13px;
+      border: 1px solid #d3c7ab;
+      border-radius: 999px;
+      padding: 9px 26px;
+      transition: all 0.2s;
+    }
+    .lwj_foot a:hover { color: #6b4f21; border-color: #6b4f21; }
+    .lwj_foot a + a { margin-left: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="lwj_wrap">
+
+    <!-- ====== 页头 ====== -->
+    <header class="lwj_head">
+      <h1>诗词展示</h1>
+      <p>数据来源：本地服务器 <code>/api/poems</code> 与 <code>/api/authors</code>（读取 db/db.json，Promise.all 并发请求）</p>
+    </header>
+
+    <!-- ====== 工具栏：数据加载完成后显示 ====== -->
+    <section class="lwj_toolbar" id="lwjToolbar" hidden>
+      <div class="lwj_search">
+        <input type="search" id="lwjSearch" placeholder="搜索标题或内容，例如：月、黄河">
+      </div>
+      <button type="button" class="lwj_sort-btn" id="lwjSortBtn">按标题长度排序</button>
+      <span class="lwj_count" id="lwjCount"></span>
+    </section>
+
+    <!-- ====== 作者栏：由 JS 请求 /api/authors 后渲染 ====== -->
+    <section class="lwj_authors" id="lwjAuthors" hidden>
+      <h2>作者</h2>
+      <ul id="lwjAuthorList"></ul>
+    </section>
+
+    <!-- ====== 卡片区：由 JS 请求接口后渲染 ====== -->
+    <main class="lwj_cards" id="lwjCards" hidden></main>
+    <p class="lwj_status" id="lwjEmpty" hidden>没有匹配的诗词，换个关键词试试。</p>
+    <p class="lwj_status" id="lwjStatus">正在从本地服务器加载诗词数据……</p>
+
+    <!-- ====== 页脚：返回首页 ====== -->
+    <footer class="lwj_foot">
+      <a href="portfolio.html">返回作品集首页</a>
+      <a href="index.html">返回游戏首页</a>
+    </footer>
+
+  </div>
+
+  <script>
+    /* 全局状态：完整诗词列表、当前搜索关键字、是否按标题长度排序 */
+    var lwjAllPoems = [];
+    var lwjKeyword = '';
+    var lwjSorted = false;
+
+    /**
+     * 渲染诗词卡片
+     * @desc 拿到 poems 数组后，为每一条数据生成一张上图下文的卡片并插入页面
+     * @param {Array} poems - 要渲染的诗词数组，每项含 pic、title、content
+     * @author 李汶静
+     * @created 2026-11-12
+     */
+    function lwjRenderPoems(poems) {
+      var container = document.getElementById('lwjCards');
+      var empty = document.getElementById('lwjEmpty');
+      var html = '';
+      poems.forEach(function (item) {
+        html += '<article class="lwj_card">'
+          + '<img src="' + item.pic + '" alt="' + item.title + '配图">'
+          + '<div class="lwj_card-body">'
+          + '<h2 class="lwj_card-title">' + item.title + '</h2>'
+          + '<p class="lwj_card-content">' + item.content + '</p>'
+          + '</div>'
+          + '</article>';
+      });
+      container.innerHTML = html;
+      container.hidden = poems.length === 0;
+      empty.hidden = poems.length !== 0;
+    }
+
+    /**
+     * 按关键字过滤并排序
+     * @desc 只对内存中的 lwjAllPoems 做加工，不重新请求接口：
+     *       先按关键字匹配标题或内容，再按需按标题长度升序排列，最后交给渲染函数
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    function lwjApplyFilters() {
+      var keyword = lwjKeyword.trim().toLowerCase();
+      var list = lwjAllPoems.filter(function (item) {
+        if (!keyword) { return true; }
+        return item.title.toLowerCase().indexOf(keyword) > -1
+          || item.content.toLowerCase().indexOf(keyword) > -1;
+      });
+      if (lwjSorted) {
+        /* slice() 先复制一份，避免 sort 改动原始数组顺序 */
+        list = list.slice().sort(function (a, b) {
+          return a.title.length - b.title.length;
+        });
+      }
+      document.getElementById('lwjCount').textContent = '共 ' + list.length + ' 首';
+      lwjRenderPoems(list);
+    }
+
+    /**
+     * 绑定搜索框与排序按钮
+     * @desc 搜索框监听 input 事件实时过滤；排序按钮在两种顺序之间切换并更新按钮文字
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    function lwjBindToolbar() {
+      var search = document.getElementById('lwjSearch');
+      var sortBtn = document.getElementById('lwjSortBtn');
+
+      search.addEventListener('input', function () {
+        lwjKeyword = search.value;
+        lwjApplyFilters();
+      });
+
+      sortBtn.addEventListener('click', function () {
+        lwjSorted = !lwjSorted;
+        sortBtn.classList.toggle('lwj_active', lwjSorted);
+        sortBtn.textContent = lwjSorted ? '恢复默认顺序' : '按标题长度排序';
+        lwjApplyFilters();
+      });
+    }
+
+    /**
+     * 渲染作者列表
+     * @desc 把 /api/authors 返回的作者数组渲染成一排胶囊标签
+     * @param {Array} authors - 作者数组，每项含 name、dynasty、intro
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    function lwjRenderAuthors(authors) {
+      var list = document.getElementById('lwjAuthorList');
+      var html = '';
+      authors.forEach(function (item) {
+        html += '<li><b>' + item.name + '</b>' + item.dynasty
+          + ' <span>· ' + item.intro + '</span></li>';
+      });
+      list.innerHTML = html;
+      document.getElementById('lwjAuthors').hidden = false;
+    }
+
+    /**
+     * 请求单个接口
+     * @desc 统一处理响应状态码与 JSON 解析，每一步都在控制台 log，方便 F12 逐段确认
+     * @param {string} url - 完整接口地址
+     * @returns {Promise<Object>} 解析后的 JSON 对象
+     * @author 李汶静
+     * @created 2026-11-16
+     */
+    function lwjFetchJson(url) {
+      return fetch(url)
+        .then(function (res) {
+          /* 第 1 步：先看原始 Response，F12 控制台确认状态码 200 */
+          console.log('第 1 步 · ' + url + ' 原始 Response：', res);
+          if (!res.ok) {
+            throw new Error(url + ' 返回状态码 ' + res.status);
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          /* 第 2 步：确认解析出的 JSON 结构再继续 */
+          console.log('第 2 步 · ' + url + ' 解析结果：', data);
+          return data;
+        });
+    }
+
+    /**
+     * 并发加载诗词与作者
+     * @desc 用 Promise.all 同时发出两个 fetch，两份数据都到齐后再一起渲染；
+     *       任一接口失败都会进 catch，在页面上给出提示而不是白屏
+     * @author 李汶静
+     * @created 2026-11-12（2026-11-16 改为并发请求两个接口）
+     */
+    function lwjLoadAll() {
+      var status = document.getElementById('lwjStatus');
+      Promise.all([
+        lwjFetchJson('http://localhost:3004/api/poems'),
+        lwjFetchJson('http://localhost:3004/api/authors')
+      ])
+        .then(function (result) {
+          /* 第 3 步：两份数据都到齐，确认条数后再渲染 */
+          var poems = result[0].poems;
+          var authors = result[1].authors;
+          console.log('第 3 步 · 并发结果：诗词 ' + poems.length + ' 首，作者 ' + authors.length + ' 位');
+          status.hidden = true;
+          lwjAllPoems = poems;
+          document.getElementById('lwjToolbar').hidden = false;
+          lwjRenderAuthors(authors);
+          lwjApplyFilters();
+        })
+        .catch(function (err) {
+          console.log('调试 · 请求出错：', err);
+          status.classList.add('lwj_error');
+          status.textContent = '加载失败：' + err.message + '。请先在 db 文件夹运行 node server.js 启动数据服务器。';
+        });
+    }
+
+    lwjBindToolbar();
+    lwjLoadAll();
+  </script>
+</body>
+</html>

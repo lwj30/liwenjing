@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人自我介绍</title>
+    <link rel="stylesheet" href="./self.css">
+    <style>
+        .title-demo{
+            color:#2c3e50;
+        }
+        #user-table{
+            width: 600px;
+            margin: 10px 0;
+        }
+        .btn{
+            background-color: #409eff;
+            color:white;
+            border:none;
+            padding:4px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 class="title-demo">个人简介</h2>
+    <h1>你好，我是李汶静</h1>
+    <h2>1.基本信息</h2>
+    <p>
+        我是一名学生，喜欢编程，<strong>正在学习前端HTML+CSS</strong>。<br>
+        我的目标：掌握网页开发，<u>做出好看实用的页面</u>。
+    </p>
+    <hr>
+
+    <h2>2.我的照片</h2>
+    <img src="https://img95.699pic.com/photo/60025/0421.jpg_wh860.jpg" alt="个人照片">
+    <br>
+    <a href="https://gitee.com/neusoft_wangyao_jsj/webdesign004project.git" target="_blank">访问我的代码仓库</a>
+
+    <h2>3.兴趣爱好</h2>
+    <h3>喜欢做的事</h3>
+    <ul>
+        <li>学习前端网页开发</li>
+        <li>写代码调试程序</li>
+        <li>看技术文档</li>
+        <li>听音乐</li>
+    </ul>
+    <h3>学习计划</h3>
+    <ol type="A">
+        <li>熟练掌握HTML标签</li>
+        <li>学习CSS样式美化页面</li>
+        <li>学习JavaScript交互效果</li>
+        <li>完成综合网页项目</li>
+    </ol>
+
+    <h2>4.个人信息表格</h2>
+    <table border="1" cellspacing="2" cellpadding="10" id="user-table">
+        <caption>个人信息表</caption>
+        <tr>
+            <th>项目</th>
+            <th>内容</th>
+        </tr>
+        <tr>
+            <td>姓名</td>
+            <td>李汶静</td>
+        </tr>
+        <tr>
+            <td>专业</td>
+            <td>计算机相关</td>
+        </tr>
+        <tr>
+            <td>擅长方向</td>
+            <td>前端基础学习</td>
+        </tr>
+    </table>
+
+    <h2>5.div块：自我评价</h2>
+    <div style="border: 1px solid red;">
+        <p>
+            <strong>自我评价</strong>
+            <br>
+            <em>乐于学习新知识，遇到bug愿意耐心排查</em>
+            <br>
+            <u>希望持续提升代码能力</u>
+        </p>
+        <p>----------------------</p>
+    </div>
+
+    <h2>6.H5语义标签划分页面</h2>
+    <header>页面头部：自我介绍标题区域</header>
+    <nav>导航：首页｜我的作品｜留言板</nav>
+    <main>主体内容：个人介绍全部内容</main>
+    <aside>侧边栏：快捷链接</aside>
+    <section>章节：个人技能</section>
+    <article>文章：我的学习心得</article>
+    <footer>页脚：联系方式，版权信息</footer>
+
+    <h2>7.留言表单（别人可以给我留言）</h2>
+    <form action="#" method="get">
+        <label for="visitor-name">访客姓名：</label>
+        <input type="text" id="visitor-name" name="visitor-name" required>
+        <br>
+        <label for="visitor-email">邮箱：</label>
+        <input type="email" id="visitor-email" name="visitor-email" required>
+        <br>
+        <p>性别：</p>
+        <input type="radio" id="v-male" name="v-gender" value="male">男
+        <input type="radio" id="v-female" name="v-gender" value="female">女
+        <br>
+        <p>感兴趣方向：</p>
+        <input type="checkbox" name="like" value="html">HTML
+        <input type="checkbox" name="like" value="css">CSS
+        <input type="checkbox" name="like" value="js">JavaScript
+        <br>
+        <p>留言内容：</p>
+        <textarea id="msg" name="msg" rows="4" cols="50" required></textarea>
+        <br>
+        <input type="submit" value="提交留言">
+        <input type="reset" value="重置">
+    </form>
+
+    <button class="btn">表单外按钮</button>
+</body>
+</html>
