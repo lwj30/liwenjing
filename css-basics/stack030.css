@@ -1,0 +1,56 @@
+*{
+    padding: 0;
+    margin: 0;
+    /* 清除默认的内边距和外边距, 元素的宽度和高度包括内边距和边框 */
+    box-sizing: border-box;
+}
+body{
+    font-family: "微软雅黑";
+    background-color: rgb(138, 27, 27);
+    color: rgb(196, 196, 40);
+}
+<!--继承:子元素可以继承父元素的样式，但是不能继承父元素的内边距、边框、外边距等-->
+.container{
+    width: 1200px;
+    margin: 0 auto;
+    /*auto居中*/
+}
+h2{
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    padding: 10px;
+    border: 1px solid yellow;
+    color: inherit;
+}
+.container .card-wrap{
+    display: flex;
+    justify-content: space-between;
+    background-color: rgb(64, 186, 188);
+}/*后代选择器选择器的优先级高于类选择器*/
+#card-wrap .card{
+    width: 300px;
+    background-color: rgb(255, 255, 255);
+    padding: 10px;
+    border: 1px solid rgb(0, 0, 0);
+    margin: 10px;
+}
+.card-wrap .card img{
+    width: 100%;
+    display: block;
+}
+.container .card-wrap .card h3{
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+h2{
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    padding: 10px;
+    border: 1px solid rgb(242, 242, 236);
+    color: inherit;
+}

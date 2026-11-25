@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!-- 选择器优先级：后代 > ID > 类名 > 标签名 -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>层叠与继承+盒模型</title>
+    <link rel="stylesheet" href="./stack030.css">
+</head>
+<body>
+<!--div.container回车-->
+<div class="container">
+    <h2 class="container-title">层叠与继承+盒模型</h2>
+    <div class="card-wrap" id = "card-wrap">
+        <!--div.item回车-->
+        <div class="card-wrap" id = "card-wrap">
+            <div class="card">
+                <img src="./img/1.jpg" alt="">
+                <h3>盒模型</h3>
+                <p>盒模型是网页布局的基础，理解盒模型有助于网页布局</p>
+                <p class="card-desc">盒模型:padding+border+margin</p>
+            我是item
+        </div>
+    </div>
+    <!--div.item回车,ol>li*10回车-->
+<!--通关游戏答案-->
+<h2>通关游戏答案</h2>
+<ol>
+    <li>plate</li>
+    <li>bento</li>
+    <li>#fancy</li>
+    <li>plate apple</li>
+    <li>#fancy pickle</li>
+    <li>apple.small</li>
+    <li>orange.small</li>
+    <li>bento orange.small</li>
+    <li>plate,bento</li>
+    <li>bento,plate,orange,apple</li> 
+    <li>plate *</li>
+    <li>plate + apple</li>
+    <li>bento ~ pickle</li>
+    </ol>
+</div>
+</body>
+</html>

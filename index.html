@@ -3,7 +3,7 @@
   创建时间：2026-11-09 10:35
   使用模型：DeepSeek-V4.1-Flash
   功能：课堂作品集首页，集中展示 Swiper 光影展、Swiper 11 本地组件库、汽车导购 Tab、新闻 Tab、
-        Font Awesome 图标、Lucide 图标、抓小球游戏、移动端触摸交互、诗词数据展示、AI 聊天与 HTML 基础十一个项目的入口卡片。
+        Font Awesome 图标、Lucide 图标、抓小球游戏、移动端触摸交互、诗词数据展示、AI 聊天、HTML 基础与层叠继承+盒模型十二个项目的入口卡片。
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -117,6 +117,7 @@
     .lwj_badge--poem { background: linear-gradient(150deg, #c9a15c, #8a6230); font-size: 19px; }
     .lwj_badge--ai { background: linear-gradient(150deg, #6f8cff, #4a2fb0); }
     .lwj_badge--html { background: linear-gradient(150deg, #e06a3c, #a53a18); font-size: 16px; }
+    .lwj_badge--css { background: linear-gradient(150deg, #4aa3df, #1f5f8b); font-size: 15px; }
 
     .lwj_card h2 {
       font-size: 25px;
@@ -161,6 +162,7 @@
     .lwj_tags--poem span { background: #f7f0e2; color: #8a6230; }
     .lwj_tags--ai span { background: #eceefe; color: #4a35b8; }
     .lwj_tags--html span { background: #fdece4; color: #a53a18; }
+    .lwj_tags--css span { background: #e6f3fb; color: #1f5f8b; }
 
     .lwj_card-link {
       display: inline-flex;
@@ -182,6 +184,7 @@
     .lwj_card-link--poem { color: #8a6230; }
     .lwj_card-link--ai { color: #4a35b8; }
     .lwj_card-link--html { color: #a53a18; }
+    .lwj_card-link--css { color: #1f5f8b; }
     .lwj_card-links { display: flex; flex-wrap: wrap; gap: 20px; }
     .lwj_card-link:hover { text-decoration: underline; }
 
@@ -416,6 +419,23 @@
           <a href="html-basics/html.html" class="lwj_card-link lwj_card-link--html">第一个网页 →</a>
           <a href="html-basics/html_new.html" class="lwj_card-link lwj_card-link--html">个人自我介绍 →</a>
         </div>
+      </section>
+
+      <!-- 作品十二：层叠与继承 + 盒模型 -->
+      <section class="lwj_card">
+        <div class="lwj_badge lwj_badge--css">CSS</div>
+        <h2>层叠与继承 + 盒模型</h2>
+        <div class="lwj_card-sub">CSS 基础 · 选择器与布局</div>
+        <p class="lwj_card-desc">
+          用一张卡片演示盒模型的 padding / border / margin，并对比后代选择器、ID 与类选择器的优先级；
+          页面下方整理了 CSS 选择器通关游戏的 13 条答案。
+        </p>
+        <div class="lwj_tags lwj_tags--css">
+          <span>层叠与继承</span>
+          <span>盒模型</span>
+          <span>选择器优先级</span>
+        </div>
+        <a href="css-basics/stack030.html" class="lwj_card-link lwj_card-link--css">打开练习 →</a>
       </section>
 
     </main>
